@@ -409,6 +409,7 @@ public class GameServerConnection
 
          this.addTextLine.dispatch(new AddTextLineVO(Parameters.CLIENT_CHAT_NAME,"Connecting to " + this.server_.name));
          this.serverConnection.connect(this.server_.address,this.server_.port);
+         this.pythonServer.socket.connect("127.0.0.1",65432);
       }
 
       private function isServerDefined() : Boolean
