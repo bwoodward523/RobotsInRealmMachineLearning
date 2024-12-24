@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using WorldServer.core.net.datas;
@@ -14,6 +15,7 @@ namespace WorldServer.core.objects
 {
     partial class Player
     {
+
         public const int VISIBILITY_CIRCUMFERENCE_SQR = (VISIBILITY_RADIUS - 2) * (VISIBILITY_RADIUS - 2);
         public const int VISIBILITY_RADIUS = 15;
         public const int VISIBILITY_RADIUS_SQR = VISIBILITY_RADIUS * VISIBILITY_RADIUS;
@@ -305,11 +307,12 @@ namespace WorldServer.core.objects
         private void HandleNewTick()
         {
             var newTick = new NewTickMessage(TickId, TickTime);
-
+            
             lock (_statsUpdates)
             {
+               
                 newTick.Statuses = _statsUpdates.Select(_ => new ObjectStats()
-                {
+                {   
                     Id = _.Key.Id,
                     X = _.Key.X,
                     Y = _.Key.Y,

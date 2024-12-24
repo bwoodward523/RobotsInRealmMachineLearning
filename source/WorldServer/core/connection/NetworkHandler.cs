@@ -243,6 +243,8 @@ namespace WorldServer.core.connection
                     {
                         var id = r.GetPacketId();
                         var payload = r.GetPacketBody();
+                        Console.WriteLine($"Received packet ID: {id}, Payload Length: {payload.Length}");
+
                         if (Client.Player == null) // read it instantly if there is no player otherwise we will append it to the world instance
                         {
                             if (id != MessageId.HELLO && id != MessageId.LOAD && id != MessageId.CREATE)
@@ -255,8 +257,8 @@ namespace WorldServer.core.connection
                             var handler = MessageHandlers.GetHandler(id);
                             if (handler == null)
                             {
-                                Client.PacketSpamAmount++;
-                                if (Client.PacketSpamAmount > 32)
+                                //Client.PacketSpamAmount++;
+                                if (Client.PacketSpamAmount > 128)
                                     Client.Disconnect($"Packet Spam: {Client.IpAddress}");
                                 StaticLogger.Instance.Error($"Unknown MessageId: {id} - {Client.IpAddress}");
                                 continue;

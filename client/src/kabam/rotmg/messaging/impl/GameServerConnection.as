@@ -212,6 +212,8 @@ import robotlegs.bender.framework.api.ILogger;
 
 import kabam.rotmg.game.model.PotionInventoryModel;
 
+import kabam.rotmg.messaging.impl.PythonServerConnection;
+
 public class GameServerConnection
    {
 
@@ -346,8 +348,13 @@ public class GameServerConnection
       private var model:GameModel;
       private var showPopupSignal:ShowPopupSignal;
 
+      public var pythonServer:PythonServerConnection = null;
+
       public function GameServerConnection(gs:GameSprite, server:Server, gameId:int, createCharacter:Boolean, charId:int, keyTime:int, key:ByteArray, mapJSON:String)
       {
+         //Add my Python Server connection here
+         this.pythonServer = new PythonServerConnection();
+
          this.injector = StaticInjectorContext.getInjector();
          this.addTextLine = this.injector.getInstance(AddTextLineSignal);
          this.addSpeechBalloon = this.injector.getInstance(AddSpeechBalloonSignal);
@@ -372,6 +379,8 @@ public class GameServerConnection
          this.keyTime_ = keyTime;
          this.key_ = key;
          this.mapJSON_ = mapJSON;
+
+
       }
 
       public function disconnect() : void

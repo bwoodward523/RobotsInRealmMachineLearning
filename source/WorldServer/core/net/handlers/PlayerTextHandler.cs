@@ -43,13 +43,13 @@ namespace WorldServer.core.net.handlers
                 if (!player.NameChosen)
                 {
                     player.SendError("Please choose a name before chatting.");
-                    return;
+                    //return;
                 }
 
                 if (player.Muted)
                 {
                     player.SendError("Muted. You can not talk at this time.");
-                    return;
+                    //return;
                 }
 
                 if (player.CompareAndCheckSpam(text, tickTime.TotalElapsedMs))
@@ -58,10 +58,10 @@ namespace WorldServer.core.net.handlers
                 }
 
                 if (!player.Client.Account.Admin)
-                    if (!player.GameServer.Configuration.serverInfo.testing && player.Stars < 2)
+                    if (!player.GameServer.Configuration.serverInfo.testing)
                     {
                         player.SendHelp("To use this feature you need 2 stars");
-                        return;
+                        //return;
                     }
 
                 // save message for mob behaviors

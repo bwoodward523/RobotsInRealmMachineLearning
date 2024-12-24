@@ -7,11 +7,14 @@ using WorldServer.core.objects;
 using WorldServer.core.worlds;
 using WorldServer.core.net.datas;
 using System.Runtime.CompilerServices;
+using NLog;
 
 namespace WorldServer.core.net.handlers
 {
     public class MoveHandler : IMessageHandler
     {
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
         public override MessageId MessageId => MessageId.MOVE;
 
         public override void Handle(Client client, NetworkReader rdr, ref TickTime tickTime)
@@ -101,6 +104,8 @@ namespace WorldServer.core.net.handlers
                 //}
 
                 player.Move(newX, newY);
+                string message = string.Format("{0},{1}", player.X,player.Y);
+                Log.Warn(message);
                 player.UpdateTiles();
             }
 

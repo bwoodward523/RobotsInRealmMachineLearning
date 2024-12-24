@@ -21,7 +21,7 @@ namespace WorldServer.core.objects
                 var handler = MessageHandlers.GetHandler(incomingMessage.MessageId);
                 if (handler == null)
                 {
-                    incomingMessage.Client.PacketSpamAmount++;
+                    //incomingMessage.Client.PacketSpamAmount++;
                     if (incomingMessage.Client.PacketSpamAmount > 32)
                         incomingMessage.Client.Disconnect($"Packet Spam: {incomingMessage.Client.IpAddress}");
                     StaticLogger.Instance.Error($"Unknown MessageId: {incomingMessage.MessageId} - {Client.IpAddress}");

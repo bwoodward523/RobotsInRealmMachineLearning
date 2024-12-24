@@ -40,6 +40,7 @@ import kabam.lib.tasks.BaseTask;
          this.client.sendRequest("/account/verify", {
             "guid":this.data.username,
             "password":this.data.password
+
          });
       }
       

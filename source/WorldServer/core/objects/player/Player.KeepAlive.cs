@@ -56,7 +56,9 @@ namespace WorldServer.core.objects
 
             if (tickId != moveTickId)
             {
-                Client.Disconnect("[NewTick -> Move] TickIds don't match");
+                string message = string.Format("IDs {0} and {1} don't match", tickId, moveTickId);
+
+                Client.Disconnect(message);
                 return;
             }
 
