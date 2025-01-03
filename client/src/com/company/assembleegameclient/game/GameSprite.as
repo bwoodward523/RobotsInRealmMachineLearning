@@ -58,6 +58,7 @@ import kabam.rotmg.ui.view.HUDView;
 
 import org.osflash.signals.Signal;
 
+
 public class GameSprite extends Sprite
 {
    protected static const PAUSED_FILTER:ColorMatrixFilter = new ColorMatrixFilter(MoreColorUtil.greyscaleFilterMatrix);

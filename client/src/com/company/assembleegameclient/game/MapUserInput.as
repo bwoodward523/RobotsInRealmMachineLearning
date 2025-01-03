@@ -37,6 +37,9 @@ import kabam.rotmg.ui.signals.StatsTabHotKeyInputSignal;
 import net.hires.debug.Stats;
 import org.swiftsuspenders.Injector;
 
+
+import kabam.rotmg.messaging.impl.PythonServerConnection;
+
 public class MapUserInput
 {
    private var stats_:Stats = new Stats();
@@ -66,6 +69,7 @@ public class MapUserInput
    private var tabStripModel:TabStripModel;
    public var layers:Layers;
 
+   public var pythonServer:PythonServerConnection = null;
    public function MapUserInput(gs:GameSprite)
    {
       super();
@@ -558,8 +562,13 @@ public class MapUserInput
       }
       this.setPlayerMovement();
    }
-
-   private function setPlayerMovement() : void
+   public function setMovementVars(left:Boolean, right:Boolean, up:Boolean, down:Boolean):void{
+      moveLeft_ = left;
+      moveRight_ = right;
+      moveUp_ = up;
+      moveDown_ = down;
+   }
+   public function setPlayerMovement() : void
    {
       var player:Player = this.gs_.map.player_;
       if(player != null)

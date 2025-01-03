@@ -352,9 +352,6 @@ public class GameServerConnection
 
       public function GameServerConnection(gs:GameSprite, server:Server, gameId:int, createCharacter:Boolean, charId:int, keyTime:int, key:ByteArray, mapJSON:String)
       {
-         //Add my Python Server connection here
-         this.pythonServer = new PythonServerConnection();
-
          this.injector = StaticInjectorContext.getInjector();
          this.addTextLine = this.injector.getInstance(AddTextLineSignal);
          this.addSpeechBalloon = this.injector.getInstance(AddSpeechBalloonSignal);
@@ -380,7 +377,8 @@ public class GameServerConnection
          this.key_ = key;
          this.mapJSON_ = mapJSON;
 
-
+         //Add my Python Server connection here
+         this.pythonServer = new PythonServerConnection(gs);
       }
 
       public function disconnect() : void
@@ -409,6 +407,7 @@ public class GameServerConnection
 
          this.addTextLine.dispatch(new AddTextLineVO(Parameters.CLIENT_CHAT_NAME,"Connecting to " + this.server_.name));
          this.serverConnection.connect(this.server_.address,this.server_.port);
+         //this.pythonServer.helloWorld();
       }
 
       private function isServerDefined() : Boolean
@@ -1311,6 +1310,10 @@ public class GameServerConnection
 
       private function onNewTick(newTick:NewTick) : void
       {
+         //Set our movement inputs to the inputs from our python server
+         gs_.mui_.setMovementVars(pythonServer.moveLeft, pythonServer.moveRight, pythonServer.moveUp, pythonServer.moveDown);
+         gs_.mui_.setPlayerMovement();
+
          if(this.jitterWatcher_ != null){
             this.jitterWatcher_.record();
          }
