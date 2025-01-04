@@ -22,6 +22,7 @@ import kabam.rotmg.ui.model.EnvironmentData;
 import kabam.rotmg.ui.view.components.DarkenFactory;
 import kabam.rotmg.ui.view.components.MapBackground;
 import org.osflash.signals.Signal;
+import flash.utils.setTimeout;
 
 public class TitleView extends Sprite
 {
@@ -113,6 +114,9 @@ public class TitleView extends Sprite
       this.container = new Sprite();
       this.playButton = new TitleMenuOption(ScreenTypes.PLAY,36,true);
       this.playButton.addEventListener(MouseEvent.CLICK, removeListener);
+
+      var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+      setTimeout(function():Boolean { playButton.dispatchEvent(clickEvent); }, 3000); // Trigger the click
       this.playClicked = this.playButton.clicked;
       this.container.addChild(this.playButton);
       this.serversButton = new TitleMenuOption(ScreenTypes.SERVERS,22,false);

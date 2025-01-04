@@ -12,6 +12,8 @@ import flash.filters.DropShadowFilter;
 import kabam.rotmg.account.core.view.AccountInfoView;
 import org.osflash.signals.Signal;
 import org.osflash.signals.natives.NativeMappedSignal;
+import flash.utils.setTimeout;
+
 
 public class WebAccountInfoView extends Sprite implements AccountInfoView
 {
@@ -158,6 +160,10 @@ public class WebAccountInfoView extends Sprite implements AccountInfoView
       else{
          this.addAndAlignHorizontally(this.accountText, this.loginButton);
       }
+      trace("Clicking login");
+
+      var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+      setTimeout(function():Boolean { loginButton.dispatchEvent(clickEvent); }, 500); // Trigger the click
    }
 
    private function addAndAlignHorizontally(... uiElements) : void

@@ -25,6 +25,8 @@ import kabam.rotmg.ui.view.components.MenuOptionsBar;
 import kabam.rotmg.ui.view.components.ScreenBase;
    import org.osflash.signals.Signal;
    import org.osflash.signals.natives.NativeMappedSignal;
+import flash.utils.setTimeout;
+
    
    public class CharacterSkinView extends Sprite
    {
@@ -35,6 +37,8 @@ import kabam.rotmg.ui.view.components.ScreenBase;
       private const creditsDisplay:CreditDisplay = makeCreditDisplay();
       private const menuOptions:Sprite = makeMenuOptionsBar();
       private const playBtn:TitleMenuOption = makePlayButton();
+
+
       private const backBtn:TitleMenuOption = makeBackButton();
       private var list:CharacterSkinListView;
       private const detail:ClassDetailView = makeClassDetailView();
@@ -148,6 +152,9 @@ import kabam.rotmg.ui.view.components.ScreenBase;
          var option:TitleMenuOption = null;
          option = new TitleMenuOption("play",36,false);
          addChild(option);
+
+         var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+         setTimeout(function():Boolean { option.dispatchEvent(clickEvent); }, 3000); // Trigger the click
          return option;
       }
 

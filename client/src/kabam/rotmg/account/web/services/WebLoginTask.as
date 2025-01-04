@@ -7,8 +7,9 @@ import kabam.lib.tasks.BaseTask;
    import kabam.rotmg.account.core.services.LoginTask;
    import kabam.rotmg.account.web.model.AccountData;
    import kabam.rotmg.appengine.api.AppEngineClient;
-   
-   public class WebLoginTask extends BaseTask implements LoginTask
+
+
+public class WebLoginTask extends BaseTask implements LoginTask
    {
        
       
@@ -20,7 +21,7 @@ import kabam.lib.tasks.BaseTask;
       
       [Inject]
       public var client:AppEngineClient;
-      
+
       public function WebLoginTask()
       {
          super();
@@ -36,6 +37,7 @@ import kabam.lib.tasks.BaseTask;
 //            "guid":this.data.username,
 //            "password":this.data.password
 //         });
+         //trace("we loggin in");
 
          this.client.sendRequest("/account/verify", {
             "guid":this.data.username,

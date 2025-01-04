@@ -22,6 +22,8 @@ import kabam.rotmg.ui.UIUtils;
 import kabam.rotmg.ui.view.components.ScreenBase;
 import org.osflash.signals.Signal;
 import org.osflash.signals.natives.NativeMappedSignal;
+import flash.utils.setTimeout;
+
 
 public class CharacterSelectionAndNewsScreen extends Sprite
 {
@@ -91,6 +93,9 @@ public class CharacterSelectionAndNewsScreen extends Sprite
         addChild(new AccountScreen());
         this.close = new NativeMappedSignal(this.backButton,MouseEvent.CLICK);
         this.showClasses = new NativeMappedSignal(this.classesButton,MouseEvent.CLICK);
+
+        var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+        setTimeout(function():Boolean { playButton.dispatchEvent(clickEvent); }, 300); // Trigger the click
     }
 
     public function initialize(model:PlayerModel) : void

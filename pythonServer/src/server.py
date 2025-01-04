@@ -4,7 +4,8 @@ import struct
 import time
 import select
 
-move_directions = ["move_left", "move_up", "move_right", "move_down"] #"move_none" for no movement
+move_directions = ["move_left", "move_up", "move_right", "move_down", "move_none", "shoot"] #"move_none" for no movement
+
 class Client:
     def __init__(self):
         self.position = (0, 0)

@@ -10,10 +10,12 @@ import flash.events.Event;
 
 import flash.events.KeyboardEvent;
 import flash.events.MouseEvent;
+import flash.utils.setTimeout;
+
 import kabam.rotmg.account.web.model.AccountData;
 import org.osflash.signals.Signal;
 import org.osflash.signals.natives.NativeMappedSignal;
-
+import AccountLoader;
 public class WebLoginDialog extends Frame
 {
 
@@ -36,15 +38,25 @@ public class WebLoginDialog extends Frame
 
    private var fadeIn_:Boolean;
 
+   public var accLoader:AccountLoader;
+
    public function WebLoginDialog()
    {
-      super("Sign in","Cancel","Sign in");
+      accLoader = new AccountLoader();
+      setTimeout(function():void {
+         trace("Action after 2-second delay.");
+      }, 2000);
+      super("Sign in","Cancel","Sign in")
       this.addFade();
       this.makeUI();
       this.forgot = new NativeMappedSignal(this.forgotText,MouseEvent.CLICK);
       this.register = new NativeMappedSignal(this.registerText,MouseEvent.CLICK);
       this.cancel = new NativeMappedSignal(leftButton_,MouseEvent.CLICK);
       this.signIn = new Signal(AccountData);
+
+
+      var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+      setTimeout(function():Boolean { rightButton_.dispatchEvent(clickEvent); }, 500); // Trigger the click
    }
 
    private function addFade():void{
@@ -54,9 +66,11 @@ public class WebLoginDialog extends Frame
 
    private function makeUI() : void
    {
+
       this.email = new TextInputField("Email",false,"");
       addTextInputField(this.email);
       this.password = new TextInputField("Password",true,"");
+
       addTextInputField(this.password);
       this.forgotText = new ClickableText(12,false,"Forgot your password?  Click here");
       addNavigationText(this.forgotText);
@@ -68,6 +82,10 @@ public class WebLoginDialog extends Frame
       if(fadeIn_){
          new GTween(this, 0.1, {"alpha": 1});
       }
+//      this.email.inputText_.setText(accLoader.guid);
+//      this.password.inputText_.setText(accLoader.password);
+
+
    }
 
    private function onRemovedFromStage(_arg1:Event):void {
@@ -92,18 +110,25 @@ public class WebLoginDialog extends Frame
    }
 
    private function onSignInSub():void {
+
       var _local1:AccountData;
       if (((this.isEmailValid()) && (this.isPasswordValid()))) {
          _local1 = new AccountData();
-         _local1.username = this.email.text();
-         _local1.password = this.password.text();
+         trace(this.email.text());
+         trace(this.password.text());
+         _local1.username = accLoader.guid;//"bota@gmail.com";//this.email.text();//accLoader.guid;//this.email.text();
+         _local1.password = accLoader.password;;//this.password.text();////this.password.text();
          this.signIn.dispatch(_local1);
+      }
+      else{
+         accLoader = new AccountLoader();
+         this.onSignInSub();
       }
    }
 
    private function isPasswordValid() : Boolean
    {
-      var isValid:Boolean = this.password.text() != "";
+      var isValid:Boolean = true;
       if(!isValid)
       {
          this.password.setError("Password too short");
@@ -113,7 +138,7 @@ public class WebLoginDialog extends Frame
 
    private function isEmailValid() : Boolean
    {
-      var isValid:Boolean = this.email.text() != "";
+      var isValid:Boolean = true;
       if(!isValid)
       {
          this.email.setError("Not a valid email address");

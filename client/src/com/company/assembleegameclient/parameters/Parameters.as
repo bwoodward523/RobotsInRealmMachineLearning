@@ -158,8 +158,8 @@ public class Parameters {
         setDefault("playPewPew", true);
         setDefault("centerOnPlayer", true);
         setDefault("preferredServer", null);
-        setDefault("cameraAngle", 7 * Math.PI / 4);
-        setDefault("defaultCameraAngle", 7 * Math.PI / 4);
+        setDefault("cameraAngle", 0);
+        setDefault("defaultCameraAngle", 0);
         setDefault("showQuestPortraits", true);
         setDefault("allowRotation", true);
         setDefault("charIdUseMap", {});
@@ -170,7 +170,7 @@ public class Parameters {
         setDefault("showGuildInvitePopup", true);
         setDefault("contextualClick", true);
         setDefault("inventorySwap", true);
-        setDefault("GPURender", true);
+        setDefault("GPURender", false);
         setDefault("eyeCandyParticles", true);
         setDefault("hpBars", true);
         setDefault("allyShots", true);

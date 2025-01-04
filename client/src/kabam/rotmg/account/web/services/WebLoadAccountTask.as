@@ -8,7 +8,6 @@ package kabam.rotmg.account.web.services
    import kabam.rotmg.account.core.services.LoadAccountTask;
    import kabam.rotmg.account.web.model.AccountData;
    import kabam.rotmg.appengine.api.AppEngineClient;
-   
    public class WebLoadAccountTask extends BaseTask implements LoadAccountTask
    {
        
