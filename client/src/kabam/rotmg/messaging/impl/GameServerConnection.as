@@ -212,7 +212,7 @@ import robotlegs.bender.framework.api.ILogger;
 
 import kabam.rotmg.game.model.PotionInventoryModel;
 
-import kabam.rotmg.messaging.impl.PythonServerConnection;
+
 
 public class GameServerConnection
    {
@@ -327,7 +327,7 @@ public class GameServerConnection
       public var serverConnection:SocketServer;
       private var messages:MessageProvider;
       private var playerId_:int = -1;
-      private var player:Player;
+      public var player:Player;
       private var retryConnection_:Boolean = true;
       public var outstandingBuy_:OutstandingBuy = null;
       private var rand_:Random = null;
@@ -1319,13 +1319,8 @@ public class GameServerConnection
 
       private function onNewTick(newTick:NewTick) : void
       {
-         //Set our movement inputs to the inputs from our python server
-         gs_.mui_.setMovementVars(pythonServer.moveLeft, pythonServer.moveRight, pythonServer.moveUp, pythonServer.moveDown);
-         gs_.mui_.setPlayerMovement();
-         if(pythonServer.shootAngle != -1){
-            player.attemptAttackAngle(pythonServer.shootAngle);
-         }
 
+         pythonServer.tick();
          if(this.jitterWatcher_ != null){
             this.jitterWatcher_.record();
          }

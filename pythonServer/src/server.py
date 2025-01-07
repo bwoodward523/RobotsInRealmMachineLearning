@@ -4,7 +4,7 @@ import struct
 import time
 import select
 
-move_directions = ["move_left", "move_up", "move_right", "move_down", "move_none", "shoot"] #"move_none" for no movement
+move_directions = ["move_left", "move_up", "move_right", "move_down", "move_none", "shoot", "ability"] #"move_none" for no movement
 
 class Client:
     def __init__(self):
@@ -18,6 +18,7 @@ class Client:
         self.projectile_velocities = []
         self.enemy_positions = []
         self.in_realm = False
+        self.ability_range = 1
 
 def start_server(host='127.0.0.1', port=65432):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -53,26 +54,32 @@ def start_server(host='127.0.0.1', port=65432):
                 move_idx = 0
 
             for conn in writeable:
+                if conn not in connections:
+                    continue
                 client = connections[conn]
                 try:
                     message = ""
                     rand = random.randint(0, 10)
                     if not client.in_realm:
-                        time.sleep(.5)
+                        time.sleep(.6)
                         message = "enter_realm"
                         client.in_realm = True
-                    elif 0 < rand < 6:
+                    elif rand == 0:
+                        x = random.uniform(-100, 100) * client.ability_range * 5
+                        y = random.uniform(-100, 100) * client.ability_range * 5
+                        message = f"ability {x:.2f} {y:.2f}"
+                    elif 1 < rand < 6:
                         message = move_directions[move_idx]
-                    elif rand > 6:
+                    elif rand >= 6:
                         message = "shoot" + " " + str(random.randint(0, 360))
                         print(f"Sent message: {message}")
-
-                    message_length = len(message)
-                    header = struct.pack("!iB", message_length + 5, 1)
-                    packet = header + message.encode()
-                    conn.send(packet)
-                    print(f"Sent message: {message}")
-                    time.sleep(.01)
+                    if not message == "":
+                        message_length = len(message)
+                        header = struct.pack("!iB", message_length + 5, 1)
+                        packet = header + message.encode()
+                        conn.send(packet)
+                        print(f"Sent message: {message}")
+                        time.sleep(.01)
                 except (OSError, ValueError):
                     print("Connection error, closing connection.")
                     if conn in connections:

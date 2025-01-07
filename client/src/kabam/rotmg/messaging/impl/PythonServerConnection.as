@@ -20,6 +20,7 @@ import flash.events.KeyboardEvent;
 import flash.ui.Keyboard;
 
 import flash.utils.setTimeout;
+import kabam.rotmg.constants.UseType;
 
 
 
@@ -37,6 +38,10 @@ public class PythonServerConnection extends Sprite{
     public var moveUp:Boolean = false;
     public var moveDown:Boolean = false;
     public var shootAngle:int = -1;
+    public var useAbility:Boolean = false;
+    var xCoord:Number;
+    var yCoord:Number;
+
     public var STAGE:Stage;
 
     public function PythonServerConnection() {
@@ -88,7 +93,17 @@ public class PythonServerConnection extends Sprite{
             trace("Socket is not connected.");
         }
     }
-
+    public function tick():void{
+        gs.mui_.setMovementVars(moveLeft, moveRight, moveUp, moveDown);
+        gs.mui_.setPlayerMovement();
+        if(shootAngle != -1){
+            gs.gsc_.player.attemptAttackAngle(shootAngle);
+        }
+        if(useAbility){
+            gs.gsc_.player.useAltWeapon(xCoord,yCoord,UseType.START_USE);
+            useAbility = false
+        }
+    }
     private function onDataReceived(event:ProgressEvent):void {
         var byteArray:ByteArray = new ByteArray();
         socket.readBytes(byteArray, 0, socket.bytesAvailable); // Read all available data into a ByteArray
@@ -134,12 +149,21 @@ public class PythonServerConnection extends Sprite{
                     if(message == "move_none"){
                         clearInputs();
                     }
-                    if(message.substring(0,5) == "shoot"){
+                    if(message.substring(0,5) == "shoot") {
                         shootAngle = int(message.substring(7, message.length));
                     }
                     else{
                         //Disable server shooting;
                         shootAngle = -1;
+                    }
+                    if(message.substring(0,7) == "ability"){
+                        var parts:Array = message.split(" "); // Split into ["ability", "12.36", "82.17"]
+                        if (parts.length == 3) {
+                            useAbility = true;
+                            xCoord = parseFloat(parts[1]);
+                            yCoord = parseFloat(parts[2]);
+                            trace("X: "+ xCoord + " Y: " + yCoord);
+                        }
                     }
                 }
             } else {
