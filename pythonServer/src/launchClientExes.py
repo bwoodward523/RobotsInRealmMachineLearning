@@ -67,8 +67,8 @@ def set_window_position_and_size(title_contains, x, y, width, height):
 
 
 WINDOW_SIZE = 300  # Width and height of each window
-WINDOW_COUNT = 20  # Total number of windows
-GRID_COLUMNS = 5   # Number of columns in the grid
+WINDOW_COUNT = 5  # Total number of windows
+GRID_COLUMNS = 3   # Number of columns in the grid
 
 if __name__ == "__main__":
     for i in range(WINDOW_COUNT):

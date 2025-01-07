@@ -5,6 +5,7 @@ import kabam.rotmg.game.signals.AddTextLineSignal;
 import kabam.rotmg.core.StaticInjectorContext;
 import org.swiftsuspenders.Injector;
 import kabam.rotmg.game.model.AddTextLineVO;
+import flash.display.Stage;
 
 import kabam.lib.net.impl.SocketServer;
 import flash.display.Sprite;
@@ -17,6 +18,9 @@ import flash.utils.ByteArray;
 
 import flash.events.KeyboardEvent;
 import flash.ui.Keyboard;
+
+import flash.utils.setTimeout;
+
 
 
 //
@@ -32,14 +36,28 @@ public class PythonServerConnection extends Sprite{
     public var moveRight:Boolean = false;
     public var moveUp:Boolean = false;
     public var moveDown:Boolean = false;
+    public var shootAngle:int = -1;
+    public var STAGE:Stage;
 
-    public function PythonServerConnection(gs:GameSprite) {
+    public function PythonServerConnection() {
         var injector:Injector = StaticInjectorContext.getInjector();
         this.addTextLine = injector.getInstance(AddTextLineSignal);
-        this.gs = gs;
+        STAGE = WebMain.STAGE;
+        //this.gs = gs;
         socket = new Socket();
         configureListeners();
         connectToServer();
+//        if (stage) {
+//
+//        }
+//        else {
+//            addEventListener(Event.ADDED_TO_STAGE, this.onAddedToStage);
+//        }
+    }
+
+    //Set the gamestate variable
+    public function setGameState(gs:GameSprite){
+        this.gs = gs;
     }
     private function configureListeners():void {
         socket.addEventListener(Event.CONNECT, onConnect);
@@ -47,7 +65,7 @@ public class PythonServerConnection extends Sprite{
         socket.addEventListener(IOErrorEvent.IO_ERROR, onError);
     }
 
-    private function connectToServer():void {
+    public function connectToServer():void {
         try {
             socket.connect(serverHost, serverPort);
             trace("Connecting to server...");
@@ -85,7 +103,7 @@ public class PythonServerConnection extends Sprite{
             if (byteArray.bytesAvailable >= totalLength - 5) {
                 // Read the message content
                 var message:String = byteArray.readUTFBytes(totalLength - 5);
-                trace("Received message: " + message);
+                print("Received message: " + message);
 
                 // Handle the message based on its content or type
                 if (messageType == 1) {
@@ -94,7 +112,14 @@ public class PythonServerConnection extends Sprite{
                     //TODO: Add diagonal movement (up_left {moveLeft = true; moveUp = true;)
 
                     clearInputs();
-                    if(message == "move_left"){
+
+                    if(message == "enter_realm"){
+
+                        if(gs){
+                            gs.gsc_.playerText("/realm");
+                        }
+                    }
+                    else if(message == "move_left"){
                         moveLeft = true;
                     }
                     else if(message == "move_right"){
@@ -106,7 +131,16 @@ public class PythonServerConnection extends Sprite{
                     else if(message == "move_up"){
                         moveUp = true;
                     }
-                    this.addTextLine.dispatch(new AddTextLineVO("*Help*", ((message))));
+                    if(message == "move_none"){
+                        clearInputs();
+                    }
+                    if(message.substring(0,5) == "shoot"){
+                        shootAngle = int(message.substring(7, message.length));
+                    }
+                    else{
+                        //Disable server shooting;
+                        shootAngle = -1;
+                    }
                 }
             } else {
                 // Not enough bytes yet for the full message, restore ByteArray position
@@ -114,6 +148,9 @@ public class PythonServerConnection extends Sprite{
                 break;
             }
         }
+    }
+    public function print(message:String):void{
+        this.addTextLine.dispatch(new AddTextLineVO("*Help*", ((message))));
     }
     private function clearInputs():void{
         moveLeft = false;
@@ -124,7 +161,50 @@ public class PythonServerConnection extends Sprite{
     private function onError(event:IOErrorEvent):void {
         trace("Socket error: " + event.text);
     }
+    // Function to simulate a key press
+    function simulateKeyPressToStage(keyCode:uint):void {
+        // Dispatch a key down event
+        var keyDownEvent:KeyboardEvent = new KeyboardEvent(
+                KeyboardEvent.KEY_DOWN,
+                true,    // bubbles
+                false,   // cancelable
+                0,       // charCode (optional)
+                keyCode  // keyCode for the key to simulate
+        );
+        STAGE.dispatchEvent(keyDownEvent);
 
+        // Dispatch a key up event
+        var keyUpEvent:KeyboardEvent = new KeyboardEvent(
+                KeyboardEvent.KEY_UP,
+                true,    // bubbles
+                false,   // cancelable
+                0,       // charCode (optional)
+                keyCode  // keyCode for the key to simulate
+        );
+        STAGE.dispatchEvent(keyUpEvent);
+    }
+    function simulateKeyPressToChat(keyCode:uint):void {
+        // Dispatch a key down event
+        gs.textBox_.setInputTextAllowed(true);
+        var keyDownEvent:KeyboardEvent = new KeyboardEvent(
+                KeyboardEvent.KEY_DOWN,
+                true,    // bubbles
+                false,   // cancelable
+                0,       // charCode (optional)
+                keyCode  // keyCode for the key to simulate
+        );
+        gs.textBox_.dispatchEvent(keyDownEvent);
+
+        // Dispatch a key up event
+        var keyUpEvent:KeyboardEvent = new KeyboardEvent(
+                KeyboardEvent.KEY_UP,
+                true,    // bubbles
+                false,   // cancelable
+                0,       // charCode (optional)
+                keyCode  // keyCode for the key to simulate
+        );
+        gs.textBox_.dispatchEvent(keyUpEvent);
+    }
 
     //Maybe we should define packet types and make a header value for each and encode that
 

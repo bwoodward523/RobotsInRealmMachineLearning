@@ -183,6 +183,7 @@ public class TextBox extends Sprite
       var textBoxLine:TextBoxLine = new TextBoxLine(getTimer(),name,-1,-1,"",false,text, _nameColor, _textColor);
       lines_.push(textBoxLine);
       this.refreshStatusBox();
+      trace("just printed: " + text);
    }
 
    public function addTextFull(name:String, objectId:int, numStars:int, recipient:String, text:String, nameColor:int, textColor:int) : void

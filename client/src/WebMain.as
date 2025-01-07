@@ -41,6 +41,7 @@ import robotlegs.bender.bundles.mvcs.MVCSBundle;
 import robotlegs.bender.extensions.signalCommandMap.SignalCommandMapExtension;
 import robotlegs.bender.framework.api.IContext;
 import robotlegs.bender.framework.api.LogLevel;
+import kabam.rotmg.messaging.impl.PythonServerConnection;
 
 [SWF(frameRate="60", backgroundColor="#000000", width="800", height="600")]
 public class WebMain extends Sprite {
@@ -50,6 +51,8 @@ public class WebMain extends Sprite {
 
     public static var STAGE:Stage;
 
+    public static var pythonServer:PythonServerConnection = null;
+
     public function WebMain() {
         if (stage) {
             stage.addEventListener("resize", this.onStageResize, false, 0, true);
@@ -58,6 +61,10 @@ public class WebMain extends Sprite {
         else {
             addEventListener(Event.ADDED_TO_STAGE, this.onAddedToStage);
         }
+        trace("IhaveOpened");
+        //Add my Python Server connection here
+        WebMain.pythonServer = new PythonServerConnection();
+        trace("connection established");
     }
 
     protected var context:IContext;

@@ -833,6 +833,7 @@ public class Player extends Character {
                 angle = Math.atan2(yS, xS);
                 this.doShoot(now, itemType, objectXML, Parameters.data_.cameraAngle + angle, false);
             }
+
         }
         else if (objectXML.hasOwnProperty("MultiPhase")) {
             map_.gs_.gsc_.useItem(now, objectId_, 1, itemType, pW.x, pW.y, useType);

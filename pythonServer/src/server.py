@@ -17,6 +17,7 @@ class Client:
         self.projectile_positions = []
         self.projectile_velocities = []
         self.enemy_positions = []
+        self.in_realm = False
 
 def start_server(host='127.0.0.1', port=65432):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -24,54 +25,64 @@ def start_server(host='127.0.0.1', port=65432):
         s.listen()
         print(f"Server listening on {host}:{port}")
         s.setblocking(False)
-        connections = [s]
-        connected_clients = []
-
+        connections = {}
         move_idx = 0
+
         while True:
-            readable, writable, exceptional = select.select(connections, connections, connections)
+            readable, writeable, exceptional = select.select([s] + list(connections.keys()), list(connections.keys()), [])
             for conn in readable:
                 if conn is s:
                     client_conn, addr = s.accept()
                     print(f"Connected by {addr}")
                     client_conn.setblocking(False)
-                    connections.append(client_conn)
-                    connected_clients.append(Client())
+                    connections[client_conn] = Client()
                 else:
                     try:
                         data = conn.recv(1024)
                         if not data:
-                            print("Connection lost, closing connection.")
-                            connections.remove(conn)
+                            print(f"Connection closed by client: {conn.getpeername()}")
+                            del connections[conn]
                             conn.close()
                     except ConnectionResetError:
                         print("Connection reset by peer, closing connection.")
-                        connections.remove(conn)
+                        del connections[conn]
                         conn.close()
-            #Make the player move in square
+
             move_idx += 1
             if move_idx % 4 == 0:
                 move_idx = 0
 
-            for conn in writable:
-                if conn is not s:
-                    try:
+            for conn in writeable:
+                client = connections[conn]
+                try:
+                    message = ""
+                    rand = random.randint(0, 10)
+                    if not client.in_realm:
+                        time.sleep(5)
+                        message = "enter_realm"
+                        client.in_realm = True
+                    elif 0 < rand < 6:
                         message = move_directions[move_idx]
-                        message_length = len(message)
-                        header = struct.pack("!iB", message_length + 5, 1)
-                        packet = header + message.encode()
-                        conn.send(packet)
+                    elif rand > 6:
+                        message = "shoot" + " " + str(random.randint(0, 360))
                         print(f"Sent message: {message}")
-                        time.sleep(.1)
-                    except (OSError, ValueError):
-                        print("Connection error, closing connection.")
-                        if conn in connections:
-                            connections.remove(conn)
-                        conn.close()
+
+                    message_length = len(message)
+                    header = struct.pack("!iB", message_length + 5, 1)
+                    packet = header + message.encode()
+                    conn.send(packet)
+                    print(f"Sent message: {message}")
+                    time.sleep(.01)
+                except (OSError, ValueError):
+                    print("Connection error, closing connection.")
+                    if conn in connections:
+                        del connections[conn]
+                    conn.close()
 
             for conn in exceptional:
                 print("Handling exceptional condition for", conn.getpeername())
-                connections.remove(conn)
+                if conn in connections:
+                    del connections[conn]
                 conn.close()
 
                 # #Listen to client

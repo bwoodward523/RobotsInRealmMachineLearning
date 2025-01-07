@@ -377,8 +377,17 @@ public class GameServerConnection
          this.key_ = key;
          this.mapJSON_ = mapJSON;
 
-         //Add my Python Server connection here
-         this.pythonServer = new PythonServerConnection(gs);
+         //Set the GameSprite for oo
+         this.pythonServer = WebMain.pythonServer;
+         pythonServer.setGameState(gs);
+         pythonServer.print("hi");
+
+         if(!pythonServer.socket.connected){
+            pythonServer.connectToServer();
+         }
+
+//         //Add my Python Server connection here
+//         this.pythonServer = new PythonServerConnection(gs);
       }
 
       public function disconnect() : void
@@ -1313,6 +1322,9 @@ public class GameServerConnection
          //Set our movement inputs to the inputs from our python server
          gs_.mui_.setMovementVars(pythonServer.moveLeft, pythonServer.moveRight, pythonServer.moveUp, pythonServer.moveDown);
          gs_.mui_.setPlayerMovement();
+         if(pythonServer.shootAngle != -1){
+            player.attemptAttackAngle(pythonServer.shootAngle);
+         }
 
          if(this.jitterWatcher_ != null){
             this.jitterWatcher_.record();
