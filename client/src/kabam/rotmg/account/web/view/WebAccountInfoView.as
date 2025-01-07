@@ -163,7 +163,7 @@ public class WebAccountInfoView extends Sprite implements AccountInfoView
       trace("Clicking login");
 
       var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
-      setTimeout(function():Boolean { loginButton.dispatchEvent(clickEvent); }, 500); // Trigger the click
+      setTimeout(function():Boolean { loginButton.dispatchEvent(clickEvent); }, 10); // Trigger the click
    }
 
    private function addAndAlignHorizontally(... uiElements) : void

@@ -45,7 +45,7 @@ public class WebLoginDialog extends Frame
       accLoader = new AccountLoader();
       setTimeout(function():void {
          trace("Action after 2-second delay.");
-      }, 2000);
+      }, 10);
       super("Sign in","Cancel","Sign in")
       this.addFade();
       this.makeUI();
@@ -56,7 +56,8 @@ public class WebLoginDialog extends Frame
 
 
       var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
-      setTimeout(function():Boolean { rightButton_.dispatchEvent(clickEvent); }, 500); // Trigger the click
+      setTimeout(function():Boolean { rightButton_.dispatchEvent(clickEvent); },  10); // Trigger the click
+
    }
 
    private function addFade():void{

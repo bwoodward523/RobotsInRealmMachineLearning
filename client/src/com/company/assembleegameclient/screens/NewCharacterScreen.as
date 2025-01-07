@@ -16,6 +16,8 @@ import io.decagames.rotmg.ui.buttons.SliceScalingButton;
 import io.decagames.rotmg.ui.defaults.DefaultLabelFormat;
 import io.decagames.rotmg.ui.sliceScaling.SliceScalingBitmap;
 import io.decagames.rotmg.ui.texture.TextureParser;
+import flash.utils.setTimeout;
+
 
 import kabam.rotmg.core.model.PlayerModel;
    import kabam.rotmg.game.view.CreditDisplay;
@@ -46,6 +48,19 @@ import kabam.rotmg.core.model.PlayerModel;
          this.close = new Signal();
          addChild(new ScreenBase());
          addChild(new AccountScreen());
+
+//         var playerXML:XML = null;
+//         var objectType:int = 0;
+//         playerXML = ObjectLibrary.playerChars_[0];
+//         objectType = int(playerXML.@type);
+//
+////            if(!charBox.available_)
+////            {
+////               return;
+////            }
+//         //var objectType:int = objectType();
+//         // var displayId:String = ObjectLibrary.typeToDisplayId_[objectType];
+
       }
 
       private function makeBar():Sprite
@@ -156,6 +171,15 @@ import kabam.rotmg.core.model.PlayerModel;
          this.positionButtons();
          if (WebMain.STAGE)
              WebMain.STAGE.addEventListener(Event.RESIZE, positionButtons);
+
+
+
+         //index 2 is wizard
+         playerXML = ObjectLibrary.playerChars_[2];
+         objectType = int(playerXML.@type);
+         this.selected.dispatch(objectType);
+
+
       }
 
       private function onBackClick(event:Event) : void
@@ -188,6 +212,8 @@ import kabam.rotmg.core.model.PlayerModel;
          var objectType:int = charBox.objectType();
          var displayId:String = ObjectLibrary.typeToDisplayId_[objectType];
          this.selected.dispatch(objectType);
+         trace("ObjectType value = " + objectType);
+         trace("this.selected.num listeners -> " + this.selected.numListeners);
       }
 
       public function updateCreditsAndFame(credits:int, fame:int) : void

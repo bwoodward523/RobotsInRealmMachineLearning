@@ -95,7 +95,7 @@ public class CharacterSelectionAndNewsScreen extends Sprite
         this.showClasses = new NativeMappedSignal(this.classesButton,MouseEvent.CLICK);
 
         var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
-        setTimeout(function():Boolean { playButton.dispatchEvent(clickEvent); }, 300); // Trigger the click
+        setTimeout(function():Boolean { playButton.dispatchEvent(clickEvent); }, 10); // Trigger the click
     }
 
     public function initialize(model:PlayerModel) : void

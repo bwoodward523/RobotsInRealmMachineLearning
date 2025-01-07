@@ -116,7 +116,7 @@ public class TitleView extends Sprite
       this.playButton.addEventListener(MouseEvent.CLICK, removeListener);
 
       var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
-      setTimeout(function():Boolean { playButton.dispatchEvent(clickEvent); }, 3000); // Trigger the click
+      setTimeout(function():Boolean { playButton.dispatchEvent(clickEvent); }, 10); // Trigger the click
       this.playClicked = this.playButton.clicked;
       this.container.addChild(this.playButton);
       this.serversButton = new TitleMenuOption(ScreenTypes.SERVERS,22,false);

@@ -58,7 +58,7 @@ def start_server(host='127.0.0.1', port=65432):
                     message = ""
                     rand = random.randint(0, 10)
                     if not client.in_realm:
-                        time.sleep(5)
+                        time.sleep(.5)
                         message = "enter_realm"
                         client.in_realm = True
                     elif 0 < rand < 6:

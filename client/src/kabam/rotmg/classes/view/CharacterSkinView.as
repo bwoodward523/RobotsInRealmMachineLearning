@@ -154,7 +154,7 @@ import flash.utils.setTimeout;
          addChild(option);
 
          var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
-         setTimeout(function():Boolean { option.dispatchEvent(clickEvent); }, 3000); // Trigger the click
+         setTimeout(function():Boolean { option.dispatchEvent(clickEvent); }, 10); // Trigger the click
          return option;
       }
 
