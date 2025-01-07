@@ -11,7 +11,7 @@ class Client:
         self.position = (0, 0)
         self.health = 0
         self.speed = 0
-        #self.can_ability = False #can implement later
+        self.can_ability = False # Ability flag
         self.move_direction = "move_none"
         self.shoot_angle = 0
         self.projectile_positions = []
@@ -19,6 +19,16 @@ class Client:
         self.enemy_positions = []
         self.in_realm = False
         self.ability_range = 1
+        self.last_reward = 0  # Reward to be used for RL
+        self.observation = {
+            "position": self.position,
+            "health": self.health,
+            "move_direction": self.move_direction,
+            "shoot_angle": self.shoot_angle,
+            "projectile_positions": self.projectile_positions,
+            "projectile_velocities": self.projectile_velocities,
+            "enemy_positions": self.enemy_positions,
+        } # Observation to be used for RL
 
 def start_server(host='127.0.0.1', port=65432):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -92,27 +102,30 @@ def start_server(host='127.0.0.1', port=65432):
                     del connections[conn]
                 conn.close()
 
-                # #Listen to client
-                # header = conn.recv(5)
-                # if len(header) == 0:
-                #     print("Client sent 0 bytes, closing connection.")
-                #     break
-                #
-                # while len(header) != 5:
-                #     header += conn.recv(5 - len(header))
-                #
-                # packet_id = header[4]
-                # expected_packet_length = struct.unpack("!i", header[:4])[0]
-                # left_to_read = expected_packet_length - 5
-                # data = bytearray()
-                #
-                # while left_to_read > 0:
-                #     buf = conn.recv(left_to_read)
-                #     data += buf
-                #     left_to_read -= len(buf)
-                #     print("pakcet was received")
-                #packet = Packet(header, data, packet_id)
-                #print(f"Received packet with ID: {packet.ID}, Data: {packet.data}")
+def process_client_data(client, data):
+    # Parse the received observation data
+    observations = parse_observations(data)
 
+    # Compute the best action based on observations
+    action = compute_action(observations)
+
+    # Prepare the response packet with action
+    message_length = len(action)
+    header = struct.pack("!iB", message_length + 5, 1)  # Example header
+    packet = header + action.encode()
+
+    return packet
+
+def parse_observations(data):
+    observations = {}
+    data = data.split("\n")
+    for d in data:
+        key, value = d.split(":")
+        observations[key] = value
+    return observations
+def compute_action(observations):
+    action = ""
+    # Implement RL algorithm here
+    return action
 if __name__ == "__main__":
     start_server()

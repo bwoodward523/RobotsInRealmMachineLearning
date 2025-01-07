@@ -110,6 +110,7 @@ public class PythonServerConnection extends Sprite{
         byteArray.endian = "bigEndian"; // Match the Python server's byte order
 
         while (byteArray.bytesAvailable >= 5) { // Minimum bytes for header
+
             // Read the header
             var totalLength:int = byteArray.readInt(); // 4 bytes for message length
             var messageType:int = byteArray.readUnsignedByte(); // 1 byte for message type
@@ -120,52 +121,9 @@ public class PythonServerConnection extends Sprite{
                 var message:String = byteArray.readUTFBytes(totalLength - 5);
                 print("Received message: " + message);
 
-                // Handle the message based on its content or type
-                if (messageType == 1) {
-                    //Clear the existing inputs
+                // Route message to a handler
+                handleMessage(messageType, message);
 
-                    //TODO: Add diagonal movement (up_left {moveLeft = true; moveUp = true;)
-
-                    clearInputs();
-
-                    if(message == "enter_realm"){
-
-                        if(gs){
-                            gs.gsc_.playerText("/realm");
-                        }
-                    }
-                    else if(message == "move_left"){
-                        moveLeft = true;
-                    }
-                    else if(message == "move_right"){
-                        moveRight = true;
-                    }
-                    else if(message == "move_down"){
-                        moveDown = true;
-                    }
-                    else if(message == "move_up"){
-                        moveUp = true;
-                    }
-                    if(message == "move_none"){
-                        clearInputs();
-                    }
-                    if(message.substring(0,5) == "shoot") {
-                        shootAngle = int(message.substring(7, message.length));
-                    }
-                    else{
-                        //Disable server shooting;
-                        shootAngle = -1;
-                    }
-                    if(message.substring(0,7) == "ability"){
-                        var parts:Array = message.split(" "); // Split into ["ability", "12.36", "82.17"]
-                        if (parts.length == 3) {
-                            useAbility = true;
-                            xCoord = parseFloat(parts[1]);
-                            yCoord = parseFloat(parts[2]);
-                            trace("X: "+ xCoord + " Y: " + yCoord);
-                        }
-                    }
-                }
             } else {
                 // Not enough bytes yet for the full message, restore ByteArray position
                 byteArray.position -= 5;
@@ -173,6 +131,57 @@ public class PythonServerConnection extends Sprite{
             }
         }
     }
+    private function handleMessage(messageType:int, message:String):void {
+        if (messageType == 1) { // Movement and actions
+            clearInputs();
+
+            if (message == "enter_realm") {
+                if (gs) gs.gsc_.playerText("/realm");
+            } else if (message.indexOf("move_") == 0) {
+                handleMovement(message);
+            } else if (message.indexOf("shoot") == 0) {
+                handleShooting(message);
+            } else if (message.indexOf("ability") == 0) {
+                handleAbility(message);
+            }
+        }
+    }
+
+    private function handleMovement(message:String):void {
+        switch (message) {
+            case "move_left":
+                moveLeft = true;
+                break;
+            case "move_right":
+                moveRight = true;
+                break;
+            case "move_down":
+                moveDown = true;
+                break;
+            case "move_up":
+                moveUp = true;
+                break;
+            case "move_none":
+                clearInputs();
+                break;
+        }
+    }
+
+    private function handleShooting(message:String):void {
+        var angle:int = parseInt(message.substring(6)); // Extract angle after "shoot "
+        shootAngle = isNaN(angle) ? -1 : angle;
+    }
+
+    private function handleAbility(message:String):void {
+        var parts:Array = message.split(" "); // Split into ["ability", "12.36", "82.17"]
+        if (parts.length == 3) {
+            useAbility = true;
+            xCoord = parseFloat(parts[1]);
+            yCoord = parseFloat(parts[2]);
+
+        }
+    }
+    //Print to game chat
     public function print(message:String):void{
         this.addTextLine.dispatch(new AddTextLineVO("*Help*", ((message))));
     }
