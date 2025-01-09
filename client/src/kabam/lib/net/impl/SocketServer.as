@@ -11,6 +11,7 @@ import flash.net.Socket;
 import flash.utils.ByteArray;
 
 import kabam.lib.net.api.MessageProvider;
+import kabam.rotmg.messaging.impl.GameServerConnection;
 
 import org.osflash.signals.Signal;
 
@@ -23,6 +24,11 @@ public class SocketServer {
 
     private const unsentPlaceholder:Message = new Message(0);
     private const data:ByteArray = new ByteArray();
+
+
+
+    //List of packet types to intercept from World Server.
+    var ObservationPackets = [GameServerConnection.UPDATE];
 
     private static function logError(message:Message = null, error:Error = null):void
     {
@@ -64,6 +70,7 @@ public class SocketServer {
     private var head:Message;
     private var tail:Message;
     private var messageLen:int = -1;
+
 
     public function connect(address:String, port:int):void {
         server = address;
@@ -119,6 +126,11 @@ public class SocketServer {
             socket.writeByte(message.id);
             socket.writeBytes(data);
 
+            //Forward packets to python server
+            if(isDesiredObservationPacket(message.id)){
+                //trace(data);
+                WebMain.pythonServer.forwardPacketFromClient(message.id, data);
+            }
             message.consume();
         }
 
@@ -194,6 +206,8 @@ public class SocketServer {
             var messageId:uint = socket.readUnsignedByte();
             var message:Message = messages.require(messageId);
             var data:ByteArray = new ByteArray();
+            //Forward packets to python server
+
             if (messageLen - 5 > 0)
                 socket.readBytes(data, 0, messageLen - 5);
 
@@ -207,7 +221,13 @@ public class SocketServer {
 
             try
             {
+                trace("Data b4 parsefrominput" + data);
+//                if(isDesiredObservationPacket(messageId)){
+//                    WebMain.pythonServer.forwardPacketFromServer(messageId, data);
+//                }
                 message.parseFromInput(data);
+                trace("Data after parsefrominput" + data);
+
             }
             catch (e:Error)
             {
@@ -215,8 +235,24 @@ public class SocketServer {
                 break;
             }
 
+//            if(isDesiredObservationPacket(messageId)){
+//                WebMain.pythonServer.forwardPacketFromServer(messageId, data);
+//            }
+
             message.consume();
         }
     }
+    public function isDesiredObservationPacket(MessageID:uint):Boolean {
+
+        if(MessageID == GameServerConnection.UPDATE){
+            return true;
+        }
+        else if(MessageID == GameServerConnection.MOVE){
+            //trace("Intercepted Move Message")
+            return true;
+        }
+        return false;
+    }
+
 }
 }

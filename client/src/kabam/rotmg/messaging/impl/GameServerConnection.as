@@ -1075,7 +1075,7 @@ public class GameServerConnection
       {
          if (!Parameters.data_.allyDamage)
          {
-            if (damage.objectId_ != playerId_ && damage.targetId_ != playerId_) // aka nothing to do wit parent player
+            if (damage.objectId_ != playerId_ && damage.targetId_ != playerId_) // aka nothing to do with parent player
             {
                return;
             }
@@ -1114,6 +1114,7 @@ public class GameServerConnection
                Parameters.DamageCounter[targetId] = damageAdd;
             }
          }
+         pythonServer.sendDamage(player.hp_);
       }
 
       private function onServerPlayerShoot(serverPlayerShoot:ServerPlayerShoot) : void
@@ -1251,6 +1252,8 @@ public class GameServerConnection
       private function onUpdate(update:Update):void {
          var updateAck:Message = this.messages.require(UPDATEACK);
          serverConnection.sendMessage(updateAck);
+
+         //trace(update);
 
          var i:int = 0;
          var tile:GroundTileData;
@@ -2235,6 +2238,7 @@ public class GameServerConnection
          var remove:MarketRemove = this.messages.require(MARKET_REMOVE) as MarketRemove;
          remove.id_ = id;
          this.serverConnection.sendMessage(remove);
+
       }
 
       /* Market */

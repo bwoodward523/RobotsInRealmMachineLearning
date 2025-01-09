@@ -1,6 +1,9 @@
 package kabam.rotmg.messaging.impl
 {
 import com.company.assembleegameclient.game.GameSprite;
+
+import flash.sampler.getSize;
+
 import kabam.rotmg.game.signals.AddTextLineSignal;
 import kabam.rotmg.core.StaticInjectorContext;
 import org.swiftsuspenders.Injector;
@@ -39,8 +42,8 @@ public class PythonServerConnection extends Sprite{
     public var moveDown:Boolean = false;
     public var shootAngle:int = -1;
     public var useAbility:Boolean = false;
-    var xCoord:Number;
-    var yCoord:Number;
+    public var xCoord:Number;
+    public var yCoord:Number;
 
     public var STAGE:Stage;
 
@@ -61,7 +64,7 @@ public class PythonServerConnection extends Sprite{
     }
 
     //Set the gamestate variable
-    public function setGameState(gs:GameSprite){
+    public function setGameState(gs:GameSprite): void{
         this.gs = gs;
     }
     private function configureListeners():void {
@@ -81,7 +84,7 @@ public class PythonServerConnection extends Sprite{
 
     private function onConnect(event:Event):void {
         trace("Connected to server!");
-        sendMessage("Hello, Server!");
+        //sendMessage("Hello, Server!");
     }
 
     private function sendMessage(message:String):void {
@@ -92,6 +95,10 @@ public class PythonServerConnection extends Sprite{
         } else {
             trace("Socket is not connected.");
         }
+    }
+
+    private function sendDamage(hp:int):void{
+        sendMessage( + hp);
     }
     public function tick():void{
         gs.mui_.setMovementVars(moveLeft, moveRight, moveUp, moveDown);
@@ -265,5 +272,43 @@ public class PythonServerConnection extends Sprite{
 //    }
 
     //Lets set the mui variables so that we and then call setmovementinput
+
+    //Forward a packet to pyserver
+    public function forwardPacketFromClient(messageId:uint, data:ByteArray):void {
+        if (!socket.connected) {
+            trace("Python socket is not connected.");
+            return;
+        }
+
+        try {
+            var packet:ByteArray = new ByteArray();
+            packet.writeInt(data.length + 5); // Packet length
+            packet.writeByte(messageId); // Message ID
+            packet.writeBytes(data); // Original message data
+
+            socket.writeBytes(packet);
+            socket.flush();
+        } catch (e:Error) {
+            trace("Error forwarding packet: " + e.message);
+        }
+    }
+    public function forwardPacketFromServer(messageId:uint, data:ByteArray):void {
+        if (!socket.connected) {
+            //trace("Python socket is not connected.");
+            return;
+        }
+
+        try {
+            var packet:ByteArray = new ByteArray();
+            packet.writeInt(data.length + 5); // Packet length
+            packet.writeByte(messageId); // Message ID
+            //packet.writeBytes(data); // Original message data
+            //socket.writeUTFBytes(packet);
+            socket.writeBytes(packet);
+            socket.flush();
+        } catch (e:Error) {
+            trace("Error forwarding packet: " + e.message);
+        }
+    }
 }
 }

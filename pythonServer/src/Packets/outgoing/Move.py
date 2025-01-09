@@ -20,10 +20,11 @@ class Move:
 		self.newPosition.parseCoords(reader)
 		length = reader.ReadShort()
 
-		for _ in range(length):
-			m = MoveRecord()
-			m.parseFromInput(reader)
-			self.records.append(m)
+		# for _ in range(length):
+		# 	pos = WorldPosData().parseCoords(reader)
+		# 	m = MoveRecord(reader.ReadInt(), pos.x, pos.y)
+		# 	#m.parseFromInput(reader)
+		# 	self.records.append(m)
 
 	def write(self, writer):
 		#writer.WriteInt(self.objectID)

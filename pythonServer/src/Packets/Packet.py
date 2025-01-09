@@ -1,7 +1,7 @@
-from PacketWriter import PacketWriter
-from PacketTypes import PacketTypes
+from .PacketWriter import PacketWriter
+from .PacketTypes import PacketTypes
 
-from incoming.__init__ import *
+from .incoming.__init__ import *
 from .outgoing.__init__ import *
 
 class Packet:

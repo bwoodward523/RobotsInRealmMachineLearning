@@ -102,5 +102,6 @@ class PacketTypes:
     ClaimBattlePassItem = 179
     MissionsReceive = 180
     RespriteItem = 181
+    ObsHealth = 182
 
     reverseDict = {x[1]: x[0] for x in locals().items() if isinstance(x[1], int)}
