@@ -2,6 +2,7 @@ import random
 import socket
 import struct
 import time
+import math
 import select
 from Packets.PacketReader import PacketReader
 from Packets.PacketTypes import PacketTypes
@@ -66,7 +67,7 @@ def start_server(host='127.0.0.1', port=65432):
                         if conn not in connections:
                             continue
 
-                        print("Data:", data)
+                        #print("Data:", data)
                         process_packets(client)
                         action = compute_action(client.observations, client)
                         send_action(conn, action)
@@ -102,28 +103,61 @@ def process_client_data(client, data):
     data = data.decode()
     #print(data)
     packet_id = int(data[:3])
-    print("pkt id ", packet_id, "data:", data[3:])
+    #print("pkt id ", packet_id, "data:", data[3:])
     data = data[3:]
     if packet_id == PacketTypes.ObsHealth:
         client.observations["health"] = int(data)
-        print(client.observations)
+        #print(client.observations)
 
     if packet_id == PacketTypes.ObsPosition:
-        print("data pre split", data)
+        #print("data pre split", data)
         x, y = data.split(" ")
         client.observations["position"] = (float(x), float(y))
-        print(client.observations)
+        #print(client.observations)
+    if packet_id == PacketTypes.ObsEnemyPositions:
+        #print("data pre split", data)
+        pairs = data.split(",")
+        enemy_positions = []
+        for pair in pairs:
+            #print("pair" , pair)
+            x, y = pair.split(" ")
+            enemy_positions.append((float(x), float(y)))
+        client.observations["enemy_positions"] = enemy_positions
+        #print(client.observations)
 
     # Parse the received observation data
     #client.observations = parse_observations(data)
 
     # Compute the best action based on observations
 
+def auto_aim(client):
+    if not client.observations["enemy_positions"]:
+        return "move_none"  # No enemies to shoot at
 
+    client_pos = client.observations["position"]
+    closest_enemy = None
+    min_distance = float('inf')
+
+    for enemy_pos in client.observations["enemy_positions"]:
+        distance = math.sqrt((enemy_pos[0] - client_pos[0]) ** 2 + (enemy_pos[1] - client_pos[1]) ** 2)
+        if distance < min_distance:
+            min_distance = distance
+            closest_enemy = enemy_pos
+
+    if closest_enemy is None:
+        return "move_none"  # No enemies to shoot at
+
+    dx = closest_enemy[0] - client_pos[0]
+    dy = closest_enemy[1] - client_pos[1]
+    angle = math.degrees(math.atan2(dy, dx))
+    if angle < 0:
+        angle += 360
+    print(f"Auto-aiming at {closest_enemy} with angle {angle:.2f}")
+    return angle
 def build_observations(data):
     observations = {}
     data = data.split("\n")
-    print(data)
+    #print(data)
     if data:
         observations = data
         #for d in data:
@@ -138,6 +172,7 @@ def compute_action(observations, client):
     # Implement RL algorithm here
 
     #Old action for testing
+
     action = random_choice_extra(client)
     return action
 
@@ -161,53 +196,9 @@ def random_choice_extra(client):
     elif 1 < rand < 6:
             message = move_directions[move_idx]
     elif rand >= 6:
-            message = "shoot" + " " + str(random.random() * 360.0)
+            message = f"shoot {auto_aim(client)}"
             #print(f"Sent message: {message}")
     return message
 
 if __name__ == "__main__":
     start_server()
-
-    # client = connections[conn]
-    # try:
-    #     header = conn.recv(5)
-    #     if len(header) == 0:
-    #         print("Error server send no bytes")
-    #         del connections[conn]
-    #         conn.close()
-    #         continue
-    #
-    #     while len(header) < 5:
-    #         header += conn.recv(5 - len(header))
-    #
-    #     packet_id = header[4]
-    #     packet_len = struct.unpack("!i", header[:4])[0]
-    #
-    #     left_to_read = packet_len - 5
-    #     data = bytearray()
-    #
-    #     while left_to_read > 0:
-    #         try:
-    #             buf = conn.recv(left_to_read)
-    #             if not buf:  # Connection closed by client
-    #                 print("Client closed the connection.")
-    #                 del connections[conn]
-    #                 conn.close()
-    #                 return None
-    #             data.extend(buf)
-    #             left_to_read -= len(buf)
-    #             print(left_to_read)
-    #         except BlockingIOError:
-    #             # No data available at the moment, try again later
-    #             continue
-    #
-    #     if left_to_read == 0:
-    #         packet = Packet(header, data, packet_id)
-    #         response = process_client_data(client, packet)
-    #         conn.send(response)
-
-    # Remove the processed packet from the buffer
-    # else:
-    #     print(f"Connection closed by client: {conn.getpeername()}")
-    #     del connections[conn]
-    #     conn.close()

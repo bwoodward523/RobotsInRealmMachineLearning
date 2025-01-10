@@ -17,6 +17,7 @@ import flash.events.IOErrorEvent;
 import flash.events.ProgressEvent;
 import flash.net.Socket;
 import flash.utils.ByteArray;
+import com.company.assembleegameclient.objects.GameObject;
 
 
 import flash.events.KeyboardEvent;
@@ -25,6 +26,7 @@ import flash.ui.Keyboard;
 import flash.utils.setTimeout;
 import kabam.rotmg.constants.UseType;
 
+import starling.utils.deg2rad;
 
 
 //
@@ -97,7 +99,7 @@ public class PythonServerConnection extends Sprite{
         if (socket.connected) {
             socket.writeUTFBytes(message + "\n"); // Send message with a newline
             socket.flush(); // Send the message immediately
-            trace("Message sent: " + message);
+            //trace("Message sent: " + message);
         } else {
             trace("Socket is not connected.");
         }
@@ -114,11 +116,42 @@ public class PythonServerConnection extends Sprite{
         }
         skipSendCount++;
     }
+    public function sendEnemy(go:Vector.<GameObject>){
+        var message:String = "184";
+        var x:String ,y:String;
+        var g:GameObject;
+        for each (g in go){
+            x = g.tickPosition_.x.toFixed(2);
+            y = g.tickPosition_.y.toFixed(2);
+            message += x + " " + y + ",";
+            //print("" + getAngleBetweenPoints(gs.gsc_.player.x_,gs.gsc_.player.y_,g.tickPosition_.x,g.tickPosition_.y));
+
+        }
+        if (message.charAt(message.length - 1) == ",") {
+            message = message.slice(0, -1);
+        }
+        if(message != "184")
+            sendMessage(message);
+    }
+    public function getAngleBetweenPoints(x1:Number, y1:Number, x2:Number, y2:Number):Number {
+        // Calculate the difference in x and y coordinates
+        var dx:Number = x2 - x1;
+        var dy:Number = y2 - y1;
+
+        // Calculate the angle in radians
+        var angleRadians:Number = Math.atan2(dy, dx);
+
+        // Convert radians to degrees (optional)
+        var angleDegrees:Number = angleRadians * (180 / Math.PI);
+
+        return angleDegrees;
+    }
     public function tick():void{
         gs.mui_.setMovementVars(moveLeft, moveRight, moveUp, moveDown);
         gs.mui_.setPlayerMovement();
         if(shootAngle != -1){
-            gs.gsc_.player.attemptAttackAngle(shootAngle);
+            //print("current shoot angle " + shootAngle);
+            gs.gsc_.player.attemptAttackAngle(deg2rad(shootAngle));
         }
         if(useAbility){
             gs.gsc_.player.useAltWeapon(xCoord,yCoord,UseType.START_USE);
@@ -129,6 +162,7 @@ public class PythonServerConnection extends Sprite{
             prevHP = currHP;
             sendDamage(currHP);
         }
+
 
 
     }
@@ -147,7 +181,7 @@ public class PythonServerConnection extends Sprite{
             if (byteArray.bytesAvailable >= totalLength - 5) {
                 // Read the message content
                 var message:String = byteArray.readUTFBytes(totalLength - 5);
-                print("Received message: " + message);
+                //print("Received message: " + message);
 
                 // Route message to a handler
                 handleMessage(messageType, message);
@@ -196,8 +230,14 @@ public class PythonServerConnection extends Sprite{
     }
 
     private function handleShooting(message:String):void {
-        var angle:int = parseInt(message.substring(6)); // Extract angle after "shoot "
-        shootAngle = isNaN(angle) ? -1 : angle;
+        var parts:Array = message.split(" ");
+
+        if (parts.length == 2 && parts[0] == "shoot") {
+            var angle:Number = parseFloat(parts[1]);
+            trace("Shoot angle set to: " + angle);
+        }
+        shootAngle = angle;
+        //gs.gsc_.player.attemptAttackAngle(angle);
     }
 
     private function handleAbility(message:String):void {

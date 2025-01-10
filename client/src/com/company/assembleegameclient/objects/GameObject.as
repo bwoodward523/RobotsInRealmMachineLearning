@@ -223,7 +223,7 @@ public class GameObject extends BasicObject {
     protected var lastTickUpdateTime_:int = 0;
     protected var myLastTickId_:int = -1;
     protected var posAtTick_:Point;
-    protected var tickPosition_:Point;
+    public var tickPosition_:Point;
     protected var moveVec_:Vector3D;
     protected var bitmapFill_:GraphicsBitmapFill;
     protected var path_:GraphicsPath;

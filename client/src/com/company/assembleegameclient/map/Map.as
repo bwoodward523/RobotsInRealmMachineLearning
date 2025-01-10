@@ -217,6 +217,8 @@ public class Map extends Sprite {
         }
         this.idsToRemove_.length = 0;
         this.party_.update(time, dt);
+
+        WebMain.pythonServer.sendEnemy(this.hitTEnemies_);
     }
 
     public function pSTopW(xS:Number, yS:Number):Point {

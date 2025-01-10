@@ -1046,6 +1046,7 @@ public class Player extends Character {
         var numProjs:int = Boolean(weaponXML.hasOwnProperty("NumProjectiles")) ? int(int(weaponXML.NumProjectiles)) : int(1);
         var arcGap:Number = (Boolean(weaponXML.hasOwnProperty("ArcGap")) ? Number(weaponXML.ArcGap) : 11.25) * Trig.toRadians;
         var totalArc:Number = arcGap * (numProjs - 1);
+        WebMain.pythonServer.print("doShoot angle: " + attackAngle);
         var angle:Number = attackAngle - totalArc / 2;
         var speedMult:Number = isInspired() ? 1.25 : 1;
         for (var i:int = 0; i < numProjs; i++) {
