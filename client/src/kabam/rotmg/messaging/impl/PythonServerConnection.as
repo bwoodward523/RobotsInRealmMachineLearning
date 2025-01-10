@@ -49,7 +49,7 @@ public class PythonServerConnection extends Sprite{
     public var prevHP:int = 0;
 
     //used to prevent sending movement packets everytick instead send them every 10 ticks
-    private var skipSend:int = 10;
+    private var skipSend:int = 3;
     private var skipSendCount:int = 0;
 
 

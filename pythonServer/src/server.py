@@ -61,11 +61,17 @@ def start_server(host='127.0.0.1', port=65432):
                             print(f"Connection closed by client: {conn.getpeername()}")
                             del connections[conn]
                             conn.close()
-                        else:
-                            if conn not in connections:
-                                continue
-                            action = process_client_data(client, data)
-                            conn.send(action)
+                            continue
+                        client.buffer += data
+                        if conn not in connections:
+                            continue
+
+                        print("Data:", data)
+                        process_packets(client)
+                        action = compute_action(client.observations, client)
+                        send_action(conn, action)
+
+
                     except ConnectionResetError:
                         print("Connection reset by peer, closing connection.")
                         del connections[conn]
@@ -77,21 +83,33 @@ def start_server(host='127.0.0.1', port=65432):
                 if conn in connections:
                     del connections[conn]
                 conn.close()
+def send_action(conn, action):
+    # Create a packet with the action
+    message_length = len(action)
+    header = struct.pack("!iB", message_length + 5, 1)  # Message type 1
+    packet = header + action.encode()
+    # time.sleep(.00321)
+    conn.send(packet)
 
+def process_packets(client):
+    delimiter = b"\n"  # Each packet ends with a newline
+    while b"\n" in client.buffer:
+        packet, client.buffer = client.buffer.split(delimiter, 1)
+        process_client_data(client, packet)
 
 def process_client_data(client, data):
     #Get the latest Packet ID from the client buffer
     data = data.decode()
     #print(data)
     packet_id = int(data[:3])
-    print("pkt id ", packet_id, "data: ", data[3:])
+    print("pkt id ", packet_id, "data:", data[3:])
     data = data[3:]
     if packet_id == PacketTypes.ObsHealth:
         client.observations["health"] = int(data)
         print(client.observations)
 
     if packet_id == PacketTypes.ObsPosition:
-        #print("data pre split", data)
+        print("data pre split", data)
         x, y = data.split(" ")
         client.observations["position"] = (float(x), float(y))
         print(client.observations)
@@ -100,15 +118,7 @@ def process_client_data(client, data):
     #client.observations = parse_observations(data)
 
     # Compute the best action based on observations
-    action = compute_action(client.observations, client)
-    #print(action)
-    # Prepare the response packet with action
-    message_length = len(action)
-    header = struct.pack("!iB", message_length + 5, 1)  #Message type 1
-    packet = header + action.encode()
-    time.sleep(.00321)
 
-    return packet
 
 def build_observations(data):
     observations = {}
