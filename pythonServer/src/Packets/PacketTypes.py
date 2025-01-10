@@ -103,5 +103,6 @@ class PacketTypes:
     MissionsReceive = 180
     RespriteItem = 181
     ObsHealth = 182
+    ObsPosition = 183
 
     reverseDict = {x[1]: x[0] for x in locals().items() if isinstance(x[1], int)}

@@ -126,11 +126,7 @@ public class SocketServer {
             socket.writeByte(message.id);
             socket.writeBytes(data);
 
-            //Forward packets to python server
-            if(isDesiredObservationPacket(message.id)){
-                //trace(data);
-                WebMain.pythonServer.forwardPacketFromClient(message.id, data);
-            }
+
             message.consume();
         }
 
@@ -221,12 +217,8 @@ public class SocketServer {
 
             try
             {
-                trace("Data b4 parsefrominput" + data);
-//                if(isDesiredObservationPacket(messageId)){
-//                    WebMain.pythonServer.forwardPacketFromServer(messageId, data);
-//                }
+
                 message.parseFromInput(data);
-                trace("Data after parsefrominput" + data);
 
             }
             catch (e:Error)

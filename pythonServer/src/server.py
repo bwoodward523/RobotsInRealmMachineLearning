@@ -54,81 +54,54 @@ def start_server(host='127.0.0.1', port=65432):
                     connections[client_conn] = Client()
                 else:
                     client = connections[conn]
+
                     try:
-                        header = conn.recv(5)
-                        if len(header) == 0:
-                            print("Error server send no bytes")
+                        data = conn.recv(4096)
+                        if not data:
+                            print(f"Connection closed by client: {conn.getpeername()}")
                             del connections[conn]
                             conn.close()
-                            continue
-
-                        while len(header) < 5:
-                            header += conn.recv(5 - len(header))
-
-                        packet_id = header[4]
-                        packet_len = struct.unpack("!i", header[:4])[0]
-
-                        left_to_read = packet_len - 5
-                        data = bytearray()
-
-                        while left_to_read > 0:
-                            try:
-                                buf = conn.recv(left_to_read)
-                                if not buf:  # Connection closed by client
-                                    print("Client closed the connection.")
-                                    del connections[conn]
-                                    conn.close()
-                                    return None
-                                data.extend(buf)
-                                left_to_read -= len(buf)
-                                print(left_to_read)
-                            except BlockingIOError:
-                                # No data available at the moment, try again later
+                        else:
+                            if conn not in connections:
                                 continue
-
-                        if left_to_read == 0:
-                            packet = Packet(header, data, packet_id)
-                            response = process_client_data(client, packet)
-                            conn.send(response)
-
-                    #Remove the processed packet from the buffer
-                    # else:
-                    #     print(f"Connection closed by client: {conn.getpeername()}")
-                    #     del connections[conn]
-                    #     conn.close()
+                            action = process_client_data(client, data)
+                            conn.send(action)
                     except ConnectionResetError:
                         print("Connection reset by peer, closing connection.")
                         del connections[conn]
                         conn.close()
+
+
             for conn in exceptional:
                 print("Handling exceptional condition for", conn.getpeername())
                 if conn in connections:
                     del connections[conn]
                 conn.close()
 
-def process_client_data(client, packet):
-   # print(f"Received data: {packet.data}")
-#    packet.data = packet.data.decode()
-    if packet.ID == PacketTypes.Update:
-        p = Update()
-        p.read(packet.data)
-        print("Received update packet")
-        p.PrintString()
-    if packet.ID == PacketTypes.Move:
-        p = Move()
-        p.read(packet.data)
-        # print("Received move packet")
-        client.position = (p.newPosition.x, p.newPosition.y)
-        if 0 < random.random() < 0.5:
-            print("Client x: ", client.position[0], " y: ", client.position[1])
 
+def process_client_data(client, data):
+    #Get the latest Packet ID from the client buffer
+    data = data.decode()
+    #print(data)
+    packet_id = int(data[:3])
+    print("pkt id ", packet_id, "data: ", data[3:])
+    data = data[3:]
+    if packet_id == PacketTypes.ObsHealth:
+        client.observations["health"] = int(data)
+        print(client.observations)
+
+    if packet_id == PacketTypes.ObsPosition:
+        #print("data pre split", data)
+        x, y = data.split(" ")
+        client.observations["position"] = (float(x), float(y))
+        print(client.observations)
 
     # Parse the received observation data
     #client.observations = parse_observations(data)
 
     # Compute the best action based on observations
     action = compute_action(client.observations, client)
-    print(action)
+    #print(action)
     # Prepare the response packet with action
     message_length = len(action)
     header = struct.pack("!iB", message_length + 5, 1)  #Message type 1
@@ -137,7 +110,7 @@ def process_client_data(client, packet):
 
     return packet
 
-def parse_observations(data):
+def build_observations(data):
     observations = {}
     data = data.split("\n")
     print(data)
@@ -179,8 +152,52 @@ def random_choice_extra(client):
             message = move_directions[move_idx]
     elif rand >= 6:
             message = "shoot" + " " + str(random.random() * 360.0)
-            print(f"Sent message: {message}")
+            #print(f"Sent message: {message}")
     return message
 
 if __name__ == "__main__":
     start_server()
+
+    # client = connections[conn]
+    # try:
+    #     header = conn.recv(5)
+    #     if len(header) == 0:
+    #         print("Error server send no bytes")
+    #         del connections[conn]
+    #         conn.close()
+    #         continue
+    #
+    #     while len(header) < 5:
+    #         header += conn.recv(5 - len(header))
+    #
+    #     packet_id = header[4]
+    #     packet_len = struct.unpack("!i", header[:4])[0]
+    #
+    #     left_to_read = packet_len - 5
+    #     data = bytearray()
+    #
+    #     while left_to_read > 0:
+    #         try:
+    #             buf = conn.recv(left_to_read)
+    #             if not buf:  # Connection closed by client
+    #                 print("Client closed the connection.")
+    #                 del connections[conn]
+    #                 conn.close()
+    #                 return None
+    #             data.extend(buf)
+    #             left_to_read -= len(buf)
+    #             print(left_to_read)
+    #         except BlockingIOError:
+    #             # No data available at the moment, try again later
+    #             continue
+    #
+    #     if left_to_read == 0:
+    #         packet = Packet(header, data, packet_id)
+    #         response = process_client_data(client, packet)
+    #         conn.send(response)
+
+    # Remove the processed packet from the buffer
+    # else:
+    #     print(f"Connection closed by client: {conn.getpeername()}")
+    #     del connections[conn]
+    #     conn.close()

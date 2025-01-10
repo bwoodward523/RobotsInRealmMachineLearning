@@ -902,6 +902,7 @@ public class GameServerConnection
          this.gs_.moveRecords_.clear(move.time_);
          this.serverConnection.sendMessage(move);
          player && player.onMove();
+         pythonServer.sendCoords(player.x_,player.y_);
       }
 
       public function teleport(objectId:int) : void
@@ -1114,7 +1115,6 @@ public class GameServerConnection
                Parameters.DamageCounter[targetId] = damageAdd;
             }
          }
-         pythonServer.sendDamage(player.hp_);
       }
 
       private function onServerPlayerShoot(serverPlayerShoot:ServerPlayerShoot) : void

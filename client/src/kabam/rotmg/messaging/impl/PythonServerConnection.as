@@ -46,6 +46,12 @@ public class PythonServerConnection extends Sprite{
     public var yCoord:Number;
 
     public var STAGE:Stage;
+    public var prevHP:int = 0;
+
+    //used to prevent sending movement packets everytick instead send them every 10 ticks
+    private var skipSend:int = 10;
+    private var skipSendCount:int = 0;
+
 
     public function PythonServerConnection() {
         var injector:Injector = StaticInjectorContext.getInjector();
@@ -97,8 +103,16 @@ public class PythonServerConnection extends Sprite{
         }
     }
 
-    private function sendDamage(hp:int):void{
-        sendMessage( + hp);
+    public function sendDamage(hp:int):void{
+        sendMessage("182" + hp);
+
+    }
+    public function sendCoords(x:Number, y:Number):void{
+        if(skipSendCount == skipSend ){
+            skipSendCount = 0;
+            sendMessage("183" + x.toFixed(2) + " " + y.toFixed(2));
+        }
+        skipSendCount++;
     }
     public function tick():void{
         gs.mui_.setMovementVars(moveLeft, moveRight, moveUp, moveDown);
@@ -110,6 +124,13 @@ public class PythonServerConnection extends Sprite{
             gs.gsc_.player.useAltWeapon(xCoord,yCoord,UseType.START_USE);
             useAbility = false
         }
+        var currHP:int = gs.gsc_.player.hp_;
+        if(prevHP != currHP || prevHP == 0){
+            prevHP = currHP;
+            sendDamage(currHP);
+        }
+
+
     }
     private function onDataReceived(event:ProgressEvent):void {
         var byteArray:ByteArray = new ByteArray();
@@ -275,40 +296,43 @@ public class PythonServerConnection extends Sprite{
 
     //Forward a packet to pyserver
     public function forwardPacketFromClient(messageId:uint, data:ByteArray):void {
-        if (!socket.connected) {
-            trace("Python socket is not connected.");
-            return;
-        }
-
-        try {
-            var packet:ByteArray = new ByteArray();
-            packet.writeInt(data.length + 5); // Packet length
-            packet.writeByte(messageId); // Message ID
-            packet.writeBytes(data); // Original message data
-
-            socket.writeBytes(packet);
-            socket.flush();
-        } catch (e:Error) {
-            trace("Error forwarding packet: " + e.message);
-        }
+//        if (!socket.connected) {
+//            trace("Python socket is not connected.");
+//            return;
+//        }
+//
+//        try {
+//            var packet:ByteArray = new ByteArray();
+//            packet.writeInt(data.length + 5); // Packet length
+//            packet.writeByte(messageId); // Message ID
+//            packet.writeBytes(data); // Original message data
+//
+//            socket.writeBytes(packet);
+//            socket.flush();
+//        } catch (e:Error) {
+//            trace("Error forwarding packet: " + e.message);
+//        }
+        return;
     }
     public function forwardPacketFromServer(messageId:uint, data:ByteArray):void {
-        if (!socket.connected) {
-            //trace("Python socket is not connected.");
-            return;
-        }
-
-        try {
-            var packet:ByteArray = new ByteArray();
-            packet.writeInt(data.length + 5); // Packet length
-            packet.writeByte(messageId); // Message ID
-            //packet.writeBytes(data); // Original message data
-            //socket.writeUTFBytes(packet);
-            socket.writeBytes(packet);
-            socket.flush();
-        } catch (e:Error) {
-            trace("Error forwarding packet: " + e.message);
-        }
+//        if (!socket.connected) {
+//            //trace("Python socket is not connected.");
+//            return;
+//        }
+//
+//        try {
+//            var packet:ByteArray = new ByteArray();
+//            packet.writeInt(data.length + 5); // Packet length
+//            packet.writeByte(messageId); // Message ID
+//            //packet.writeBytes(data); // Original message data
+//            //socket.writeUTFBytes(packet);
+//            socket.writeBytes(packet);
+//            socket.flush();
+//        } catch (e:Error) {
+//            trace("Error forwarding packet: " + e.message);
+//        }
+//    }
+        return;
     }
 }
 }

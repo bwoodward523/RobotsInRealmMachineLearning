@@ -297,9 +297,12 @@ public class Player extends Character {
 
         if (map_.player_ == this && square_.props_.maxDamage_ > 0 && square_.lastDamage_ + 500 < time && !isInvincible() && (square_.obj_ == null || !square_.obj_.props_.protectFromGroundDamage_)) {
             d = map_.gs_.gsc_.getNextDamage(square_.props_.minDamage_, square_.props_.maxDamage_);
+
             damage( d, null, hp_ <= d, null, false);
             map_.gs_.gsc_.groundDamage(time, x_, y_);
             square_.lastDamage_ = time;
+
+
         }
         return true;
     }
