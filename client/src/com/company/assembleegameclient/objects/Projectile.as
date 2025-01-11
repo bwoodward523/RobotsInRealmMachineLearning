@@ -48,6 +48,7 @@ public class Projectile extends BasicObject
    public var sound_:String;
    public var startX_:Number;
    public var startY_:Number;
+   public var position:Point;
    public var startTime_:int;
    public var angle_:Number = 0;
    public var radius:Number;
@@ -59,6 +60,7 @@ public class Projectile extends BasicObject
    protected var shadowPath_:GraphicsPath;
    private var size:int;
    public var speedMul_:Number;
+
 
    public function Projectile()
    {
@@ -186,6 +188,12 @@ public class Projectile extends BasicObject
 
    override public function removeFromMap() : void
    {
+      //Decrease number of projectiles that the pythonServerConnection is keeping track of
+      if(this.damagesPlayers_){
+         WebMain.pythonServer.numOfProjectiles--;
+         WebMain.pythonServer.removeProjectile(this.ownerId_, this.bulletId_);
+      }
+      //WebMain.pythonServer.print("Removed 1 projectile, Proj count: " + WebMain.pythonServer.numOfProjectiles);
       super.removeFromMap();
       removeObjId(this.ownerId_,this.bulletId_);
       this.multiHitDict_ = null;
@@ -245,6 +253,8 @@ public class Projectile extends BasicObject
             p.y += deflection * Math.sin(this.angle_ + Math.PI / 2);
          }
       }
+      this.position = new Point(p.x, p.y);
+
    }
 
    override public function update(time:int, dt:int) : Boolean
@@ -354,8 +364,22 @@ public class Projectile extends BasicObject
             return false;
          }
       }
+
+      if(this.damagesPlayers_){
+
+         //Send projectile updates every other update to reduce load
+         updateCount++;
+         if(updateCount % 2 == 0){
+            var t0 = WebMain.pythonServer.getProjectileStartTime(this.ownerId_,this.bulletId_);
+            if(t0 != -1 && t0 != time)
+               WebMain.pythonServer.receiveProjectile(this.ownerId_,this.bulletId_,this.damage_,this.angle_,this.position.x,this.position.y,time);
+         }
+
+      }
+
       return true;
    }
+   private var updateCount:int = 0;
 
    public function getHit(pX:Number, pY:Number) : GameObject
    {

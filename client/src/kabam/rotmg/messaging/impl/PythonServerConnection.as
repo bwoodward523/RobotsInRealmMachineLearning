@@ -3,12 +3,15 @@ package kabam.rotmg.messaging.impl
 import com.company.assembleegameclient.game.GameSprite;
 
 import flash.sampler.getSize;
+import flash.utils.Dictionary;
 
 import kabam.rotmg.game.signals.AddTextLineSignal;
 import kabam.rotmg.core.StaticInjectorContext;
 import org.swiftsuspenders.Injector;
 import kabam.rotmg.game.model.AddTextLineVO;
 import flash.display.Stage;
+import com.company.assembleegameclient.objects.Projectile;
+import flash.geom.Point;
 
 import kabam.lib.net.impl.SocketServer;
 import flash.display.Sprite;
@@ -49,10 +52,18 @@ public class PythonServerConnection extends Sprite{
 
     public var STAGE:Stage;
     public var prevHP:int = 0;
-
+    public var questPosition:Point;
+    private var skipSendQuest:int = 3;
+    private var skipSendQuestCount:int = 0;
     //used to prevent sending movement packets everytick instead send them every 10 ticks
     private var skipSend:int = 3;
     private var skipSendCount:int = 0;
+
+    public var numOfProjectiles:int = 0;
+    //make projectile dictionary and grab projectiles by their id
+    private var projectiles:Dictionary;
+    //make velocity dictionary that pairs with projectile dictionary
+    private var velocities:Dictionary;
 
 
     public function PythonServerConnection() {
@@ -63,12 +74,12 @@ public class PythonServerConnection extends Sprite{
         socket = new Socket();
         configureListeners();
         connectToServer();
-//        if (stage) {
-//
-//        }
-//        else {
-//            addEventListener(Event.ADDED_TO_STAGE, this.onAddedToStage);
-//        }
+
+
+        //Initialize Dictionary
+        this.projectiles = new Dictionary();
+        this.velocities = new Dictionary();
+
     }
 
     //Set the gamestate variable
@@ -116,6 +127,17 @@ public class PythonServerConnection extends Sprite{
         }
         skipSendCount++;
     }
+    public function setQuestPosition(x:Number, y:Number):void{
+        questPosition = new Point(x,y);
+        sendQuestPosition();
+    }
+    public function sendQuestPosition():void{
+        if(skipSendQuestCount == skipSendQuest ){
+            skipSendQuestCount = 0;
+            sendMessage("186" + x.toFixed(2) + " " + y.toFixed(2));
+        }
+        skipSendQuestCount++;
+    }
     public function sendEnemy(go:Vector.<GameObject>){
         var message:String = "184";
         var x:String ,y:String;
@@ -125,7 +147,6 @@ public class PythonServerConnection extends Sprite{
             y = g.tickPosition_.y.toFixed(2);
             message += x + " " + y + ",";
             //print("" + getAngleBetweenPoints(gs.gsc_.player.x_,gs.gsc_.player.y_,g.tickPosition_.x,g.tickPosition_.y));
-
         }
         if (message.charAt(message.length - 1) == ",") {
             message = message.slice(0, -1);
@@ -133,19 +154,73 @@ public class PythonServerConnection extends Sprite{
         if(message != "184")
             sendMessage(message);
     }
-    public function getAngleBetweenPoints(x1:Number, y1:Number, x2:Number, y2:Number):Number {
-        // Calculate the difference in x and y coordinates
-        var dx:Number = x2 - x1;
-        var dy:Number = y2 - y1;
+    public function sendProjectiles(){
+        var message:String = "185";
+        var data:String = ""
+        for (var key:* in velocities){
+            if(velocities[key] && projectiles[key]){
+                data += projectiles[key].dmg + " " + projectiles[key].x + " " + projectiles[key].y + " " + velocities[key].vx + " " + velocities[key].vy + ",";
+            }
+        }
 
-        // Calculate the angle in radians
-        var angleRadians:Number = Math.atan2(dy, dx);
+        message = message + data;
 
-        // Convert radians to degrees (optional)
-        var angleDegrees:Number = angleRadians * (180 / Math.PI);
-
-        return angleDegrees;
+        if (message.charAt(message.length - 1) == ","){
+            message = message.slice(0, -1);
+        }
+        trace(message);
+        sendMessage(message);
     }
+    //Take the projectiles out of the object pool
+    public function removeProjectile(ownerid, bulletid):void{
+        var id = Projectile.findObjId(ownerid, bulletid);
+        delete projectiles[id];
+        delete velocities[id];
+    }
+
+    public function getProjectileStartTime(ownerid,bulletid):Number{
+        var id = Projectile.findObjId(ownerid, bulletid);
+        if(projectiles[id]){
+            return projectiles[Projectile.findObjId(ownerid, bulletid)].t0;
+        }
+        return -1;
+    }
+    public function receiveProjectile(ownerid, bulletid, damage, ang, startX,startY, startTime):void {
+        var id = Projectile.findObjId(ownerid, bulletid);
+
+        if(projectiles[id]){
+            //if projectile has already been added to the dictionary then calculate its velocity
+            //get previous x and y and calculate velocity
+            var x1:Number = projectiles[id].x;
+            var y1:Number = projectiles[id].y;
+            var t0:Number = projectiles[id].t0;
+            var elapsedTime:Number = startTime - t0;
+            var vx:Number = ((startX - x1)/elapsedTime) * 1000;
+            var vy:Number = ((startY - y1)/elapsedTime) * 1000;
+
+            //trace("t0: " + t0 + ", t1: "+startTime + ", elapsedTime: " + elapsedTime );
+//            trace("x1: " + x1 +
+//                    ", y1: " + y1 +
+//                    ", t0: " + t0 +
+//                    ", elapsedTime: " + elapsedTime +
+//                    ", curX: " + startX +
+//                    ", curY: " + startY +
+//                    ", vx: " + vx +
+//                    ", vy: " + vy);
+            velocities[id] =  {vx: vx, vy: vy};
+
+            //update projectile
+            projectiles[id] = {x: startX, y: startY, dmg: damage, t0: startTime};
+
+            //trace("velocity : (" + velocities[id].vx + "," + velocities[id].vy + ")")
+        }
+        else if(!velocities[id]){ //if we have not already gotten the velocity
+            //projectile is new. we add to our dictionary and wait for required data for velocity
+            projectiles[id] = {x: startX, y: startY, dmg: damage, t0: startTime};
+            //print("added proj: (" + projectiles[id].x + "," + projectiles[id].y + ")")
+        }
+    }
+
     public function tick():void{
         gs.mui_.setMovementVars(moveLeft, moveRight, moveUp, moveDown);
         gs.mui_.setPlayerMovement();
@@ -162,6 +237,17 @@ public class PythonServerConnection extends Sprite{
             prevHP = currHP;
             sendDamage(currHP);
         }
+
+
+        //check to see if projectiles are in the list
+        var count:int = 0;
+        for (var key:* in velocities) {
+            count++;
+            break;
+        }
+        //Gather valid projectiles and pack them up and ship em out
+        if(count > 0)
+            sendProjectiles();
 
 
 
@@ -234,7 +320,7 @@ public class PythonServerConnection extends Sprite{
 
         if (parts.length == 2 && parts[0] == "shoot") {
             var angle:Number = parseFloat(parts[1]);
-            trace("Shoot angle set to: " + angle);
+            //trace("Shoot angle set to: " + angle);
         }
         shootAngle = angle;
         //gs.gsc_.player.attemptAttackAngle(angle);

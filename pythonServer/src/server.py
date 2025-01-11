@@ -31,9 +31,10 @@ class Client:
             "health": self.health,
             "move_direction": self.move_direction,
             "shoot_angle": self.shoot_angle,
-            "projectile_positions": self.projectile_positions,
+            "projectile_positions": self.projectile_positions, #Sorted into a pair of Vector2 and Vector2 for each projectile. (x,y) and (dx,dy)
             "projectile_velocities": self.projectile_velocities,
             "enemy_positions": self.enemy_positions,
+            "quest_position": (0.0,0.0)
         } # Observation to be used for RL
 
 def start_server(host='127.0.0.1', port=65432):
@@ -124,7 +125,19 @@ def process_client_data(client, data):
             enemy_positions.append((float(x), float(y)))
         client.observations["enemy_positions"] = enemy_positions
         #print(client.observations)
+    if packet_id == PacketTypes.ObsProjectiles:
+        pairs = data.split(",")
+        projectile_positions = []
+        for pair in pairs:
+            dmg, x, y, dx, dy = pair.split(" ")
+            projectile_positions.append((int(dmg), float(x), float(y), float(dx), float(dy)))
+        client.observations["projectile_positions"] = projectile_positions
+        #print(client.observations["projectile_positions"])
+    if packet_id == PacketTypes.ObsQuestPosition:
+        x, y = data.split(" ")
+        client.observations["quest_position"] = (float(x), float(y))
 
+    print(client.observations)
     # Parse the received observation data
     #client.observations = parse_observations(data)
 
@@ -152,7 +165,7 @@ def auto_aim(client):
     angle = math.degrees(math.atan2(dy, dx))
     if angle < 0:
         angle += 360
-    print(f"Auto-aiming at {closest_enemy} with angle {angle:.2f}")
+    #print(f"Auto-aiming at {closest_enemy} with angle {angle:.2f}")
     return angle
 def build_observations(data):
     observations = {}
@@ -192,11 +205,13 @@ def random_choice_extra(client):
     elif rand == 0:
             x = random.uniform(-100, 100) * client.ability_range * 5
             y = random.uniform(-100, 100) * client.ability_range * 5
-            message = f"ability {x:.2f} {y:.2f}"
+            #message = f"ability {x:.2f} {y:.2f}"
     elif 1 < rand < 6:
-            message = move_directions[move_idx]
+        pass
+            #message = move_directions[move_idx]
     elif rand >= 6:
-            message = f"shoot {auto_aim(client)}"
+        pass
+            #message = f"shoot {auto_aim(client)}"
             #print(f"Sent message: {message}")
     return message
 

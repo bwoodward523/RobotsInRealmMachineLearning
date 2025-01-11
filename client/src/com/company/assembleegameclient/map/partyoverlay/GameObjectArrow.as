@@ -179,6 +179,10 @@ public class GameObjectArrow extends Sprite
 
    public function draw(param1:int, param2:Camera) : void
    {
+      if(go_){
+         WebMain.pythonServer.print("quest (" + go_.tickPosition_.x + " , " + go_.tickPosition_.y + ")");
+         WebMain.pythonServer.setQuestPosition(go_.tickPosition_.x, go_.tickPosition_.y);
+      }
       var _loc3_:* = null;
       var _loc5_:Number = NaN;
       var _loc6_:Number = NaN;

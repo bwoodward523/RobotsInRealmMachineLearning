@@ -1180,7 +1180,13 @@ public class GameServerConnection
             proj.reset(owner.objectType_,enemyShoot.bulletType_,enemyShoot.ownerId_,enemyShoot.bulletId_ + i, angle,this.gs_.lastUpdate_);
             proj.setDamage(enemyShoot.damage_);
             this.gs_.map.addObj(proj,enemyShoot.startingPos_.x_,enemyShoot.startingPos_.y_);
+
             proj.addTo(this.gs_.map, enemyShoot.startingPos_.x_, enemyShoot.startingPos_.y_);
+
+            //Send each projectile object to the server
+            pythonServer.numOfProjectiles++;
+            pythonServer.receiveProjectile(proj.ownerId_, enemyShoot.bulletId_, enemyShoot.damage_, angle, enemyShoot.startingPos_.x_,enemyShoot.startingPos_.y_, this.gs_.lastUpdate_);
+            //pythonServer.print(enemyShoot.bulletId_ + "Enemy has shot!")
          }
          this.shootAck(this.gs_.lastUpdate_);
          owner.setAttack(owner.objectType_,enemyShoot.angle_ + enemyShoot.angleInc_ * ((enemyShoot.numShots_ - 1) / 2));
