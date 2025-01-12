@@ -127,25 +127,15 @@ public class PythonServerConnection extends Sprite{
         }
         skipSendCount++;
     }
-    public function setQuestPosition(x:Number, y:Number):void{
-        questPosition = new Point(x,y);
-        sendQuestPosition();
-    }
-    public function sendQuestPosition():void{
-        if(skipSendQuestCount == skipSendQuest ){
-            skipSendQuestCount = 0;
-            sendMessage("186" + x.toFixed(2) + " " + y.toFixed(2));
-        }
-        skipSendQuestCount++;
-    }
-    public function sendEnemy(go:Vector.<GameObject>){
+
+    public function sendEnemy(go:Vector.<GameObject>):void{
         var message:String = "184";
         var x:String ,y:String;
         var g:GameObject;
         for each (g in go){
             x = g.tickPosition_.x.toFixed(2);
             y = g.tickPosition_.y.toFixed(2);
-            message += x + " " + y + ",";
+            message += x + " " + y + " " + g.hp_ + ",";
             //print("" + getAngleBetweenPoints(gs.gsc_.player.x_,gs.gsc_.player.y_,g.tickPosition_.x,g.tickPosition_.y));
         }
         if (message.charAt(message.length - 1) == ",") {
@@ -154,7 +144,7 @@ public class PythonServerConnection extends Sprite{
         if(message != "184")
             sendMessage(message);
     }
-    public function sendProjectiles(){
+    public function sendProjectiles():void{
         var message:String = "185";
         var data:String = ""
         for (var key:* in velocities){
@@ -169,6 +159,21 @@ public class PythonServerConnection extends Sprite{
             message = message.slice(0, -1);
         }
         trace(message);
+        sendMessage(message);
+    }
+    public function setQuestPosition(x:Number, y:Number):void{
+        questPosition = new Point(x,y);
+        sendQuestPosition();
+    }
+    public function sendQuestPosition():void{
+        if(skipSendQuestCount == skipSendQuest ){
+            skipSendQuestCount = 0;
+            sendMessage("186" + x.toFixed(2) + " " + y.toFixed(2));
+        }
+        skipSendQuestCount++;
+    }
+    public function sendDeath():void{
+        var message:String = "187"
         sendMessage(message);
     }
     //Take the projectiles out of the object pool

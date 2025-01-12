@@ -10,6 +10,7 @@ package kabam.rotmg.legends.view
    import flash.events.Event;
    import flash.events.MouseEvent;
    import flash.filters.DropShadowFilter;
+   import flash.utils.setTimeout;
 
 import io.decagames.rotmg.ui.buttons.SliceScalingButton;
 import io.decagames.rotmg.ui.defaults.DefaultLabelFormat;
@@ -216,6 +217,9 @@ import kabam.rotmg.legends.model.Legend;
          this.closeButton = new TitleMenuOption("done",36,false);
          addChild(this.closeButton);
          this.closeButton.addEventListener(MouseEvent.CLICK,this.onCloseClick);
+
+         var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+         setTimeout(function():Boolean { closeButton.dispatchEvent(clickEvent); }, 10); // Trigger the click
       }
 
       private function onCloseClick(event:MouseEvent) : void

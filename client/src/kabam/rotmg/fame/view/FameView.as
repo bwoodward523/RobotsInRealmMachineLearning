@@ -14,10 +14,11 @@ package kabam.rotmg.fame.view
    import flash.display.Bitmap;
    import flash.display.BitmapData;
    import flash.display.DisplayObjectContainer;
-import flash.display.Graphics;
-import flash.display.Sprite;
-import flash.events.Event;
-import flash.events.MouseEvent;
+   import flash.utils.setTimeout;
+   import flash.display.Graphics;
+   import flash.display.Sprite;
+   import flash.events.Event;
+   import flash.events.MouseEvent;
    import flash.filters.DropShadowFilter;
    import flash.geom.Rectangle;
    import kabam.rotmg.ui.view.components.ScreenBase;
@@ -54,6 +55,9 @@ import flash.events.MouseEvent;
          this.closed = new NativeMappedSignal(this.continueBtn,MouseEvent.CLICK);
          if (WebMain.STAGE)
             WebMain.STAGE.addEventListener(Event.RESIZE, positionAssets);
+
+         var clickEvent:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+         setTimeout(function():Boolean { continueBtn.dispatchEvent(clickEvent); }, 10); // Trigger the click
       }
 
       public function positionAssets(e:Event = null)

@@ -107,5 +107,6 @@ class PacketTypes:
     ObsEnemyPositions = 184
     ObsProjectiles = 185
     ObsQuestPosition = 186
+    ObsDeath = 187
 
     reverseDict = {x[1]: x[0] for x in locals().items() if isinstance(x[1], int)}

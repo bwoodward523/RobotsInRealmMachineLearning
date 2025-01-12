@@ -45,6 +45,7 @@ package com.company.assembleegameclient.objects
             return true;
          }
          var dist:Number = PointUtil.distanceXY(map_.player_.x_,map_.player_.y_,x,y);
+         WebMain.pythonServer.print("Distance to bag?: " + dist);
          if(this.isLoot_ && dist < 10)
          {
             SoundEffectLibrary.play("loot_appears");

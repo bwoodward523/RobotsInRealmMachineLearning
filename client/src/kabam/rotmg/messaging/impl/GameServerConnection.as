@@ -1989,6 +1989,7 @@ public class GameServerConnection
 
       private function onDeath(death:Death) : void
       {
+         pythonServer.sendDeath();
          disconnect();
 
          this.death = death;

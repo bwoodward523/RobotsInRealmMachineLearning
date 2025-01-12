@@ -20,9 +20,9 @@ class Client:
         self.can_ability = False # Ability flag
         self.move_direction = "move_none"
         self.shoot_angle = 0
-        self.projectile_positions = []
-        self.projectile_velocities = []
-        self.enemy_positions = []
+        # self.projectile_positions = []
+        # self.projectile_velocities = []
+        # self.enemy_positions = []
         self.in_realm = False
         self.ability_range = 1
         self.last_reward = 0  # Reward to be used for RL
@@ -31,9 +31,8 @@ class Client:
             "health": self.health,
             "move_direction": self.move_direction,
             "shoot_angle": self.shoot_angle,
-            "projectile_positions": self.projectile_positions, #Sorted into a pair of Vector2 and Vector2 for each projectile. (x,y) and (dx,dy)
-            "projectile_velocities": self.projectile_velocities,
-            "enemy_positions": self.enemy_positions,
+            "projectiles": None,#self.projectile_positions, #Sorted into a pair of Vector2 and Vector2 for each projectile. (x,y) and (dx,dy)
+            "enemy_positions+health": [],
             "quest_position": (0.0,0.0)
         } # Observation to be used for RL
 
@@ -121,9 +120,9 @@ def process_client_data(client, data):
         enemy_positions = []
         for pair in pairs:
             #print("pair" , pair)
-            x, y = pair.split(" ")
-            enemy_positions.append((float(x), float(y)))
-        client.observations["enemy_positions"] = enemy_positions
+            x, y, hp = pair.split(" ")
+            enemy_positions.append((float(x), float(y), float(hp)))
+        client.observations["enemy_positions+health"] = enemy_positions
         #print(client.observations)
     if packet_id == PacketTypes.ObsProjectiles:
         pairs = data.split(",")
@@ -131,13 +130,16 @@ def process_client_data(client, data):
         for pair in pairs:
             dmg, x, y, dx, dy = pair.split(" ")
             projectile_positions.append((int(dmg), float(x), float(y), float(dx), float(dy)))
-        client.observations["projectile_positions"] = projectile_positions
+        client.observations["projectiles"] = projectile_positions
         #print(client.observations["projectile_positions"])
     if packet_id == PacketTypes.ObsQuestPosition:
         x, y = data.split(" ")
         client.observations["quest_position"] = (float(x), float(y))
+    if packet_id == PacketTypes.ObsDeath:
+        client.in_realm = False
+        print("Player died")
 
-    print(client.observations)
+   # print(client.observations)
     # Parse the received observation data
     #client.observations = parse_observations(data)
 
