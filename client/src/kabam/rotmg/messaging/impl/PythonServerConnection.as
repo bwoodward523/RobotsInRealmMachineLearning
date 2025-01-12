@@ -28,7 +28,6 @@ import flash.ui.Keyboard;
 
 import flash.utils.setTimeout;
 import kabam.rotmg.constants.UseType;
-
 import starling.utils.deg2rad;
 
 
@@ -79,7 +78,6 @@ public class PythonServerConnection extends Sprite{
         //Initialize Dictionary
         this.projectiles = new Dictionary();
         this.velocities = new Dictionary();
-
     }
 
     //Set the gamestate variable
@@ -136,7 +134,6 @@ public class PythonServerConnection extends Sprite{
             x = g.tickPosition_.x.toFixed(2);
             y = g.tickPosition_.y.toFixed(2);
             message += x + " " + y + " " + g.hp_ + ",";
-            //print("" + getAngleBetweenPoints(gs.gsc_.player.x_,gs.gsc_.player.y_,g.tickPosition_.x,g.tickPosition_.y));
         }
         if (message.charAt(message.length - 1) == ",") {
             message = message.slice(0, -1);
@@ -158,7 +155,6 @@ public class PythonServerConnection extends Sprite{
         if (message.charAt(message.length - 1) == ","){
             message = message.slice(0, -1);
         }
-        trace(message);
         sendMessage(message);
     }
     public function setQuestPosition(x:Number, y:Number):void{
@@ -222,7 +218,6 @@ public class PythonServerConnection extends Sprite{
         else if(!velocities[id]){ //if we have not already gotten the velocity
             //projectile is new. we add to our dictionary and wait for required data for velocity
             projectiles[id] = {x: startX, y: startY, dmg: damage, t0: startTime};
-            //print("added proj: (" + projectiles[id].x + "," + projectiles[id].y + ")")
         }
     }
 
@@ -230,7 +225,6 @@ public class PythonServerConnection extends Sprite{
         gs.mui_.setMovementVars(moveLeft, moveRight, moveUp, moveDown);
         gs.mui_.setPlayerMovement();
         if(shootAngle != -1){
-            //print("current shoot angle " + shootAngle);
             gs.gsc_.player.attemptAttackAngle(deg2rad(shootAngle));
         }
         if(useAbility){
@@ -253,9 +247,6 @@ public class PythonServerConnection extends Sprite{
         //Gather valid projectiles and pack them up and ship em out
         if(count > 0)
             sendProjectiles();
-
-
-
     }
     private function onDataReceived(event:ProgressEvent):void {
         var byteArray:ByteArray = new ByteArray();
@@ -352,118 +343,6 @@ public class PythonServerConnection extends Sprite{
     }
     private function onError(event:IOErrorEvent):void {
         trace("Socket error: " + event.text);
-    }
-    // Function to simulate a key press
-    function simulateKeyPressToStage(keyCode:uint):void {
-        // Dispatch a key down event
-        var keyDownEvent:KeyboardEvent = new KeyboardEvent(
-                KeyboardEvent.KEY_DOWN,
-                true,    // bubbles
-                false,   // cancelable
-                0,       // charCode (optional)
-                keyCode  // keyCode for the key to simulate
-        );
-        STAGE.dispatchEvent(keyDownEvent);
-
-        // Dispatch a key up event
-        var keyUpEvent:KeyboardEvent = new KeyboardEvent(
-                KeyboardEvent.KEY_UP,
-                true,    // bubbles
-                false,   // cancelable
-                0,       // charCode (optional)
-                keyCode  // keyCode for the key to simulate
-        );
-        STAGE.dispatchEvent(keyUpEvent);
-    }
-    function simulateKeyPressToChat(keyCode:uint):void {
-        // Dispatch a key down event
-        gs.textBox_.setInputTextAllowed(true);
-        var keyDownEvent:KeyboardEvent = new KeyboardEvent(
-                KeyboardEvent.KEY_DOWN,
-                true,    // bubbles
-                false,   // cancelable
-                0,       // charCode (optional)
-                keyCode  // keyCode for the key to simulate
-        );
-        gs.textBox_.dispatchEvent(keyDownEvent);
-
-        // Dispatch a key up event
-        var keyUpEvent:KeyboardEvent = new KeyboardEvent(
-                KeyboardEvent.KEY_UP,
-                true,    // bubbles
-                false,   // cancelable
-                0,       // charCode (optional)
-                keyCode  // keyCode for the key to simulate
-        );
-        gs.textBox_.dispatchEvent(keyUpEvent);
-    }
-
-    //Maybe we should define packet types and make a header value for each and encode that
-
-    //Keyboard commands
-//    function simulateKeyPress(keyCode:uint):void {
-//        // Dispatch a key down event
-//        var keyDownEvent:KeyboardEvent = new KeyboardEvent(
-//                KeyboardEvent.KEY_DOWN,
-//                true,    // bubbles
-//                false,   // cancelable
-//                0,       // charCode (optional)
-//                keyCode  // keyCode for the key to simulate
-//        );
-//        stage.dispatchEvent(keyDownEvent);
-//
-//        // Dispatch a key up event
-//        var keyUpEvent:KeyboardEvent = new KeyboardEvent(
-//                KeyboardEvent.KEY_UP,
-//                true,    // bubbles
-//                false,   // cancelable
-//                0,       // charCode (optional)
-//                keyCode  // keyCode for the key to simulate
-//        );
-//        stage.dispatchEvent(keyUpEvent);
-//    }
-
-    //Lets set the mui variables so that we and then call setmovementinput
-
-    //Forward a packet to pyserver
-    public function forwardPacketFromClient(messageId:uint, data:ByteArray):void {
-//        if (!socket.connected) {
-//            trace("Python socket is not connected.");
-//            return;
-//        }
-//
-//        try {
-//            var packet:ByteArray = new ByteArray();
-//            packet.writeInt(data.length + 5); // Packet length
-//            packet.writeByte(messageId); // Message ID
-//            packet.writeBytes(data); // Original message data
-//
-//            socket.writeBytes(packet);
-//            socket.flush();
-//        } catch (e:Error) {
-//            trace("Error forwarding packet: " + e.message);
-//        }
-        return;
-    }
-    public function forwardPacketFromServer(messageId:uint, data:ByteArray):void {
-//        if (!socket.connected) {
-//            //trace("Python socket is not connected.");
-//            return;
-//        }
-//
-//        try {
-//            var packet:ByteArray = new ByteArray();
-//            packet.writeInt(data.length + 5); // Packet length
-//            packet.writeByte(messageId); // Message ID
-//            //packet.writeBytes(data); // Original message data
-//            //socket.writeUTFBytes(packet);
-//            socket.writeBytes(packet);
-//            socket.flush();
-//        } catch (e:Error) {
-//            trace("Error forwarding packet: " + e.message);
-//        }
-//    }
-        return;
     }
 }
 }
