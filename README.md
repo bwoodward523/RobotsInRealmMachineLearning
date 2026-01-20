@@ -1,2 +1,2 @@
-**Realm of the Mad God: Machine Learning Project
+**Realm of the Mad God: Machine Learning Project**
 
