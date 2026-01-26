@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -13,10 +14,25 @@ namespace App.Controllers
         public AppController(CoreService core)
         {
             _core = core;
+            Console.WriteLine("App Controller");
         }
 
         [HttpPost("getLanguageStrings")]
         public void GetLanguageStrings() => Response.CreateBytes(ReadFile($"{_core.Resources.ResourcePath}/data/languages/en.txt"));
+        //[HttpPost("getLanguageStrings")]
+        //public void GetLanguageStrings()
+        //{
+        //    var path = $"{_core.Resources.ResourcePath}/data/languages/en.txt";
+
+        //    byte[] bytes = ReadFile(path);
+
+        //    // Print file contents as UTF-8 text
+        //    Console.WriteLine(System.Text.Encoding.UTF8.GetString(bytes));
+
+        //    // Send response
+        //    Response.CreateBytes(bytes);
+        //}
+
 
         [HttpPost("serverList")]
         public void ServerList()

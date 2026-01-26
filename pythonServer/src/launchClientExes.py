@@ -66,12 +66,15 @@ def set_window_position_and_size(title_contains, x, y, width, height):
             break
 
 
-WINDOW_SIZE = 300  # Width and height of each window
-WINDOW_COUNT = 3  # Total number of windows
+WINDOW_SIZE = 266  # Width and height of each window
+X_SPACE = 10  # Horizontal space between windows
+WINDOW_COUNT = 13  # Total number of windows
 GRID_COLUMNS = 5   # Number of columns in the grid
 
 if __name__ == "__main__":
+    row, col, x_position, y_position = 0, 0, 0, 0
     for i in range(WINDOW_COUNT):
+        i = i - 1
         print(f"Generating unique ID {i + 1}")
         try:
             # Generate a new unique ID
@@ -86,7 +89,7 @@ if __name__ == "__main__":
             # Calculate grid position
             row = i // GRID_COLUMNS
             col = i % GRID_COLUMNS
-            x_position = col * WINDOW_SIZE
+            x_position = col * WINDOW_SIZE + X_SPACE
             y_position = row * WINDOW_SIZE
 
             set_window_position_and_size("betterSkillys",x=x_position, y=y_position, width=WINDOW_SIZE, height=WINDOW_SIZE)
@@ -98,3 +101,4 @@ if __name__ == "__main__":
 
             # Restore the original XML file after launching
         restore_original_xml()
+    set_window_position_and_size("betterSkillys", x=x_position + WINDOW_SIZE, y=y_position, width=WINDOW_SIZE, height=WINDOW_SIZE)

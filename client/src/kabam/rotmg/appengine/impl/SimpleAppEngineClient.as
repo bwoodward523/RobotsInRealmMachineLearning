@@ -50,6 +50,8 @@ package kabam.rotmg.appengine.impl
       
       public function sendRequest(target:String, params:Object) : void
       {
+         trace("Making request: "  + target +" with params: " + params.toString());
+         trace("URL  = " + this.makeURL(target));
          this.loader.sendRequest(this.makeURL(target),params);
       }
       

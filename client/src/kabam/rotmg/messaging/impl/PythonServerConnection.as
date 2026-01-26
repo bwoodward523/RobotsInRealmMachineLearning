@@ -52,7 +52,7 @@ public class PythonServerConnection extends Sprite{
     public var STAGE:Stage;
     public var prevHP:int = 0;
     public var questPosition:Point;
-    private var skipSendQuest:int = 3;
+    private var skipSendQuest:int = 200;
     private var skipSendQuestCount:int = 0;
     //used to prevent sending movement packets everytick instead send them every 10 ticks
     private var skipSend:int = 3;
@@ -64,7 +64,10 @@ public class PythonServerConnection extends Sprite{
     //make velocity dictionary that pairs with projectile dictionary
     private var velocities:Dictionary;
 
+    public var bags:Vector.<Point>;
+    public var noWalkTiles:Vector.<Point>;
 
+    private var maxHP:int = 0;
     public function PythonServerConnection() {
         var injector:Injector = StaticInjectorContext.getInjector();
         this.addTextLine = injector.getInstance(AddTextLineSignal);
@@ -74,7 +77,8 @@ public class PythonServerConnection extends Sprite{
         configureListeners();
         connectToServer();
 
-
+        bags = new Vector.<Point>();
+        noWalkTiles = new Vector.<Point>();
         //Initialize Dictionary
         this.projectiles = new Dictionary();
         this.velocities = new Dictionary();
@@ -110,22 +114,27 @@ public class PythonServerConnection extends Sprite{
             socket.flush(); // Send the message immediately
             //trace("Message sent: " + message);
         } else {
-            trace("Socket is not connected.");
+            //trace("Socket is not connected.");
         }
     }
 
     public function sendDamage(hp:int):void{
-        sendMessage("182" + hp);
+
+        sendMessage("182" + (hp/this.maxHP).toFixed(2));
 
     }
     public function sendCoords(x:Number, y:Number):void{
         if(skipSendCount == skipSend ){
             skipSendCount = 0;
-            sendMessage("183" + x.toFixed(2) + " " + y.toFixed(2));
+            sendMessage("183" + x.toFixed(2) + " "+ y.toFixed(2));
+            //printCoords(x,y);
         }
         skipSendCount++;
-    }
 
+    }
+    public function printCoords(x:Number, y:Number):void{
+        print("x: " +x.toFixed(2) + " y: "+ y.toFixed(2));
+    }
     public function sendEnemy(go:Vector.<GameObject>):void{
         var message:String = "184";
         var x:String ,y:String;
@@ -133,8 +142,9 @@ public class PythonServerConnection extends Sprite{
         for each (g in go){
             x = g.tickPosition_.x.toFixed(2);
             y = g.tickPosition_.y.toFixed(2);
-            message += x + " " + y + " " + g.hp_ + ",";
+            message += x + " " + y + " " + (g.hp_/g.maxHP_).toFixed(2) + ",";
         }
+
         if (message.charAt(message.length - 1) == ",") {
             message = message.slice(0, -1);
         }
@@ -146,8 +156,10 @@ public class PythonServerConnection extends Sprite{
         var data:String = ""
         for (var key:* in velocities){
             if(velocities[key] && projectiles[key]){
-                data += projectiles[key].dmg + " " + projectiles[key].x + " " + projectiles[key].y + " " + velocities[key].vx + " " + velocities[key].vy + ",";
+                data += (projectiles[key].dmg/maxHP).toFixed(2) + " " + projectiles[key].x + " " + projectiles[key].y + " " + velocities[key].vx + " " + velocities[key].vy + ",";
+                //print("Vel len: " + Math.sqrt((velocities[key].vx*velocities[key].vx) +  (velocities[key].vy *velocities[key].vy )));
             }
+
         }
 
         message = message + data;
@@ -164,7 +176,8 @@ public class PythonServerConnection extends Sprite{
     public function sendQuestPosition():void{
         if(skipSendQuestCount == skipSendQuest ){
             skipSendQuestCount = 0;
-            sendMessage("186" + x.toFixed(2) + " " + y.toFixed(2));
+            sendMessage("186" + questPosition.x.toFixed(2) + " " + questPosition.y.toFixed(2));
+            //trace("Sent quest")
         }
         skipSendQuestCount++;
     }
@@ -172,6 +185,41 @@ public class PythonServerConnection extends Sprite{
         var message:String = "187"
         sendMessage(message);
     }
+    public function sendBags():void{
+        var message:String = "188";
+        var x:String ,y:String;
+        if (this.bags.length <= 0 )
+            return;
+
+        for each (var b:Point in this.bags){
+            x = b.x.toFixed(2);
+            y = b.y.toFixed(2);
+            message += x + " " + y + ",";
+        }
+        if (message.charAt(message.length - 1) == ",") {
+            message = message.slice(0, -1);
+        }
+        sendMessage(message);
+
+    }
+
+    public function sendNoWalkTiles(){
+        var message:String = "189";
+        var x:String ,y:String;
+        if (this.noWalkTiles.length <= 0 )
+            return;
+
+        for each (var p:Point in this.noWalkTiles){
+            x = p.x.toFixed(2);
+            y = p.y.toFixed(2);
+            message += x + " " + y + ",";
+        }
+        if (message.charAt(message.length - 1) == ",") {
+            message = message.slice(0, -1);
+        }
+        sendMessage(message);
+    }
+
     //Take the projectiles out of the object pool
     public function removeProjectile(ownerid, bulletid):void{
         var id = Projectile.findObjId(ownerid, bulletid);
@@ -232,6 +280,7 @@ public class PythonServerConnection extends Sprite{
             useAbility = false
         }
         var currHP:int = gs.gsc_.player.hp_;
+        maxHP = gs.gsc_.player.maxHP_;
         if(prevHP != currHP || prevHP == 0){
             prevHP = currHP;
             sendDamage(currHP);

@@ -52,6 +52,11 @@ public class ObjectProperties
    public var isQuest_:Boolean = false;
    public var isChest_:Boolean = false;
 
+   public var isPotion_:Boolean;
+   public var slotType_:int = int.MIN_VALUE;
+   public var tier:int = int.MIN_VALUE;
+
+
    public function ObjectProperties(_arg_1:XML)
    {
       var _local_2:XML;
@@ -98,6 +103,19 @@ public class ObjectProperties
       this.showName_ = _arg_1.hasOwnProperty("ShowName");
       this.dontFaceAttacks_ = _arg_1.hasOwnProperty("DontFaceAttacks");
       this.dontFaceMovement_ = _arg_1.hasOwnProperty("DontFaceMovement");
+
+      //Auto loot params
+      this.isPotion_ = _arg_1.hasOwnProperty("Potion");
+      if (_arg_1.hasOwnProperty("SlotType"))
+      {
+         this.slotType_ = _arg_1.SlotType;
+      }
+      if (_arg_1.hasOwnProperty("Tier"))
+      {
+         this.tier = _arg_1.Tier;
+      }
+
+
       if (_arg_1.hasOwnProperty("Z"))
       {
          this.z_ = Number(_arg_1.Z);

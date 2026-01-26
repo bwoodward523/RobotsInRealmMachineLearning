@@ -26,24 +26,31 @@ package kabam.rotmg.servers.api
       public function setName(name:String) : Server
       {
          this.name = name;
+         trace(this);
          return this;
       }
       
       public function setAddress(address:String) : Server
       {
          this.address = address;
+         trace(this);
+
          return this;
       }
       
       public function setPort(port:int) : Server
       {
          this.port = port;
+         trace(this);
+
          return this;
       }
       
       public function setLatLong(latitude:Number, longitude:Number) : Server
       {
          this.latLong = new LatLong(latitude,longitude);
+         trace(this);
+
          return this;
       }
       

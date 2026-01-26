@@ -68,7 +68,7 @@ public class CookieLanguageModel implements LanguageModel {
 
     private function makeAvailableLanguages():Dictionary {
         var _local1:Dictionary = new Dictionary();
-        _local1["Languages.English"] = "en";
+//        _local1["Languages.English"] = "en";
         _local1["Languages.French"] = "fr";
         _local1["Languages.Spanish"] = "es";
         _local1["Languages.Italian"] = "it";

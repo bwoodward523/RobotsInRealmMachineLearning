@@ -22,7 +22,7 @@
         "version": "3.0.0",
         "maxConnections": 300,
         "maxPlayers": 300,
-        "maxRealms": 2,
+        "maxRealms": 1,
         "supporterOnly": false,
         "restartTime": 2,
         "whitelist": [],

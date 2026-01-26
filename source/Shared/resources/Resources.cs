@@ -45,6 +45,7 @@ namespace Shared.resources
             {
                 var webPath = file.Substring(dir.Length, file.Length - dir.Length).Replace("\\", "/");
                 WebFiles[webPath] = File.ReadAllBytes(file);
+                //Console.WriteLine(webPath);
             }
         }
 

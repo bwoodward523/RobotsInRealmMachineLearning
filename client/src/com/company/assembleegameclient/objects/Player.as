@@ -8,6 +8,7 @@ import com.company.assembleegameclient.parameters.Parameters;
 import com.company.assembleegameclient.sound.SoundEffectLibrary;
 import com.company.assembleegameclient.tutorial.Tutorial;
 import com.company.assembleegameclient.tutorial.doneAction;
+import com.company.assembleegameclient.ui.tooltip.PlayerToolTip;
 import com.company.assembleegameclient.util.AnimatedChar;
 import com.company.assembleegameclient.util.ConditionEffect;
 import com.company.assembleegameclient.util.FameUtil;
@@ -304,6 +305,12 @@ public class Player extends Character {
 
 
         }
+
+        if (!map_.gs_.isVault_)
+        {
+            this.autoLoot();
+        }
+
         return true;
     }
 
@@ -1068,5 +1075,158 @@ public class Player extends Character {
             map_.gs_.gsc_.playerShoot(time, proj);
         }
     }
+
+    public function autoLoot(time:int = -1):void{
+        var invCounter:int = 0;
+        var invSize:int = 8;
+        var equipID:int = 0;
+        var objProps:* = null;
+        if(time == -1){
+            time = getTimer();
+        }
+        //if ((time - this.map_.gs_.gsc_.)) if no work then make sure to implement this timer check
+        if (this.isInventoryFull() && healthPotionCount_ == 6 && magicPotionCount_ == 6){
+            return;
+        }
+
+        //Clear the bag list
+        WebMain.pythonServer.bags = new Vector.<Point>();
+
+        for each (var go:GameObject in this.map_.goDict_){
+            if(go is Container && go.equipment_ && (PointUtil.distanceSquaredXY(this.x_, this.y_, go.x_, go.y_) <= 1)){
+                invCounter = 0;
+                while( invCounter < invSize){
+                    equipID = go.equipment_[invCounter];
+                    if (equipID != -1){
+                        objProps = ObjectLibrary.propsLibrary_[equipID];
+                        if(objProps){
+                            if(objProps.isPotion_){
+                                drink(go, invCounter, equipID);
+                            }
+                            else if(checkForUpgrade(objProps)){
+                                equip(go, invCounter, equipID);
+                                //pickup(go, invCounter, equipID);
+                            }
+                        }
+                    }
+                    invCounter++;
+                }
+            }
+            if (go is Container){
+                //Send bag position to pyserver to get bot to move towards it
+                WebMain.pythonServer.bags.push(new Point(go.x_,go.y_));
+            }
+        }
+        //After we find all bags, send them!
+        WebMain.pythonServer.sendBags();
+
+    }
+    public function drink(go:GameObject, invPos:int, equipID:int):void{
+        this.map_.gs_.gsc_.useItem(getTimer(), go.objectId_, invPos, equipID, x_, y_, 1);
+        go.equipment_[invPos] = -1;
+        SoundEffectLibrary.play("use_potion");
+    }
+    public function pickup(go:GameObject, invPos:int, equipID:int):void{
+        var emptySlot:int;
+        if(equipID == PotionInventoryModel.HEALTH_POTION_ID){
+            //skip
+
+        }
+        else if(equipID == PotionInventoryModel.MAGIC_POTION_ID){
+            //skip
+        }
+        else{ //item to pickup
+            emptySlot = findItem(this.equipment_, -1, 4 ,false, ((this.hasBackpack_) ? 20 : 12));
+            if(emptySlot != -1){
+                this.map_.gs_.gsc_.invSwap(this, this, emptySlot, this.equipment_[emptySlot], go, invPos, go.equipment_[invPos]);
+                trace("Attempted Item pickup");
+
+            }
+        }
+    }
+    public function equip(go:GameObject, invPos:int, equipID:int):void{
+        var i:int = 0;
+        var objProps:* = ObjectLibrary.propsLibrary_[equipID];
+
+        while (i < 4){
+            var objPropsi:* = ObjectLibrary.propsLibrary_[this.equipment_[i]];
+
+            if (objPropsi){
+                //trace("Item in slot [" + i + "] has tier: " + objPropsi.tier);
+                var slotID = this.slotTypes_[i];
+                if(slotID == objProps.slotType_){
+                    this.map_.gs_.gsc_.invSwap(this, this, i, this.equipment_[i], go, invPos, go.equipment_[invPos]);
+                }
+            }
+            else{
+                var slotID = this.slotTypes_[i];
+                if(slotID == objProps.slotType_){
+                    this.map_.gs_.gsc_.invSwap(this, this, i, this.equipment_[i], go, invPos, go.equipment_[invPos]);
+                }
+            }
+//
+//
+//
+//            if(!objPropsi){ //if no item in slot, swap right away
+//
+//            }
+//            if(objProps.slotType_ != int.MIN_VALUE && objProps.slotType_ == objPropsi.slotType_ && objProps.tier > objProps.tier){
+//                this.map_.gs_.gsc_.invSwap(this, this, slotID, this.equipment_[slotID], go, invPos, go.equipment_[invPos]);
+//            }
+            i++;
+        }
+
+    }
+    public function findItem(_arg_1:Vector.<int>, _arg_2:int, _arg_3:int = 0, _arg_4:Boolean = false, _arg_5:int = 8):int{
+        var _local_6:int = -1;
+        if (_arg_4)
+        {
+            _local_6 = _arg_3;
+            while (_local_6 < _arg_5)
+            {
+                if (_arg_1[_local_6] != _arg_2)
+                {
+                    return (_local_6);
+                }
+                _local_6++;
+            }
+        } else
+        {
+            _local_6 = _arg_3;
+            while (_local_6 < _arg_5)
+            {
+                if (_arg_1[_local_6] == _arg_2)
+                {
+                    return (_local_6);
+                }
+                _local_6++;
+            }
+        }
+        return (-1);
+    }
+    public function checkForUpgrade(objProps:ObjectProperties):Boolean{
+        var equipIterator:int;
+        var slotItem:int;
+        if(objProps.slotType_  != int.MIN_VALUE){
+            equipIterator = 0;
+            while(equipIterator < 4){
+                slotItem = this.slotTypes_[equipIterator];
+                if(objProps.slotType_ == slotItem){
+                    if(this.equipment_ && this.equipment_[equipIterator] == -1){ //equip slot empty
+                        return true;
+                    }
+                    var currEquip:ObjectProperties = ObjectLibrary.propsLibrary_[this.equipment_[equipIterator]];
+                    if(currEquip && currEquip.tier != int.MIN_VALUE && objProps.tier > currEquip.tier){
+                        return true;
+                    }
+                }
+                equipIterator++;
+            }
+        }
+        return false;
+    }
+
+
+
 }
 }

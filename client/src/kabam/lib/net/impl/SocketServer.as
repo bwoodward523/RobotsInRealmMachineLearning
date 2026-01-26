@@ -73,12 +73,14 @@ public class SocketServer {
 
 
     public function connect(address:String, port:int):void {
+        trace("attempting to connect to parent server: " + address + ":" + port);
         server = address;
         port = port;
 
         addListeners();
 
         messageLen = -1;
+        trace("Heelloo?");
         socket.connect(address, port);
     }
 

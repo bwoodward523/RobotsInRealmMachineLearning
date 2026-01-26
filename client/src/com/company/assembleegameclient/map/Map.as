@@ -396,21 +396,32 @@ public class Map extends Sprite {
 
         // visible tiles
 
+        //Clear Python Server obstacle list
+        WebMain.pythonServer.noWalkTiles = new Vector.<Point>();
+
         for (var xi:int = -15; xi <= 15; xi++) {
             for (yi = -15; yi <= 15; yi++) {
                 if (xi * xi + yi * yi <= 225) {
                     square = lookupSquare(xi + player_.x_, yi + player_.y_);
                     if (square != null) {
                         square.lastVisible_ = time;
+                        //trace("Map width: "+ this.width_ + "Map HEIGHT: " + this.height_)
                         square.draw(this.graphicsData_, camera, time);
                         this.visibleSquares_.push(square);
+                        if (!square.isWalkable()){
+                            WebMain.pythonServer.noWalkTiles.push(new Point(square.x_,square.y_));
+                            //WebMain.pythonServer.print("Square NO WALK at (" + square.x_ + "," + square.y_ +")");
+                            //WebMain.pythonServer.printCoords();
+                        }
                         if (square.topFace_ != null) {
                             this.topSquares_.push(square);
                         }
+
                     }
                 }
             }
         }
+        WebMain.pythonServer.sendNoWalkTiles();
 
 //      for(var xi:int = xStart; xi <= xEnd; xi++)
 //      {

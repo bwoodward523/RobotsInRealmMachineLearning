@@ -64,7 +64,6 @@ public class WebMain extends Sprite {
         trace("IhaveOpened");
         //Add my Python Server connection here
         WebMain.pythonServer = new PythonServerConnection();
-        trace("connection established");
     }
 
     protected var context:IContext;
